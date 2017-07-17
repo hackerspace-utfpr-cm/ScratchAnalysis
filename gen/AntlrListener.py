@@ -1,4 +1,5 @@
 # Generated from E:/new/antlrg/ScratchAnalysis\Antlr.g4 by ANTLR 4.7
+# -*- coding: utf-8 -*-
 from antlr4 import *
 
 # This class defines a complete listener for a parse tree produced by AntlrParser.
@@ -18,6 +19,10 @@ class AntlrListener(ParseTreeListener):
         self.repeat_depth = 0
         self.proj_count=0
         self.sprits_count=0
+
+        self.FlowControl_score = 0 #FlowControl得分
+        self.UserInteractivity = 0 #UserInteractivity得分
+
     def print_all(self):
         print ("max_depth:", self.max_depth)
         print ("max_if_depth:", self.max_if_depth)
@@ -66,7 +71,16 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#scripts_array.
     def enterScripts_array(self, ctx):
         self.scrips_count+=1
-        pass
+
+        # 有scripts就给1分?
+        if self.FlowControl_score < 1:
+            self.FlowControl_score = 1
+
+        gen = ctx.getChildren()
+        print(gen.next())
+        print(gen.next())
+        print(gen.next())
+
 
     # Exit a parse tree produced by AntlrParser#scripts_array.
     def exitScripts_array(self, ctx):
@@ -102,6 +116,9 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_value.
     def enterCblock_value(self, ctx):
+        if ctx.WHENGREENFLAG():
+            if self.UserInteractivity < 1:
+                self.UserInteractivity = 1
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_value.
@@ -111,6 +128,8 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_doRepeat.
     def enterCblock_doRepeat(self, ctx):
+        if self.FlowControl_score < 2:
+            self.FlowControl_score = 2
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doRepeat.
@@ -120,6 +139,8 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_doUntil.
     def enterCblock_doUntil(self, ctx):
+        if self.FlowControl_score < 3:
+            self.FlowControl_score = 3
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doUntil.
@@ -156,6 +177,8 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_doForever.
     def enterCblock_doForever(self, ctx):
+        if self.FlowControl_score < 2:
+            self.FlowControl_score = 2
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doForever.

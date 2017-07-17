@@ -43,7 +43,7 @@ value
    ;
 
 cblock_value
-   :'[' '"whenGreenFlag"' ']'
+   :'[' WHENGREENFLAG ']'
    |cblock_doRepeat
    |cblock_doUntil
    |cblock_doIfElse
@@ -80,6 +80,10 @@ cblock_doForever
 SCRIPTS
    : '"scripts"'
    ;
+
+WHENGREENFLAG
+    : '"whenGreenFlag"'
+    ;
 
 STRING
    : '"' (ESC | ~ ["\\])* '"'

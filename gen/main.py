@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 from antlr4 import *
 from AntlrLexer import AntlrLexer
@@ -19,7 +20,7 @@ def unzip_scratch(filename):
         data = zfile.read("project.json")
         return data
     else:
-        return null
+        return None
 
 
 def main(argv):
