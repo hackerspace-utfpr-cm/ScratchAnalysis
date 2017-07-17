@@ -1,7 +1,8 @@
+# Generated from E:/new/antlrg/ScratchAnalysis\Antlr.g4 by ANTLR 4.7
 from antlr4 import *
 
+# This class defines a complete listener for a parse tree produced by AntlrParser.
 class AntlrListener(ParseTreeListener):
-
     def __init__(self):
         self.max_depth = 0
         self.max_if_depth = 0
@@ -10,195 +11,154 @@ class AntlrListener(ParseTreeListener):
         self.if_count = 0
         self.until_count = 0
         self.repeat_count = 0
-
+        self.scrips_count=0
         self.depth = 0
         self.if_depth = 0
         self.until_depth = 0
         self.repeat_depth = 0
-
+        self.proj_count=0
+        self.sprits_count=0
     def print_all(self):
-        print "max_depth:", self.max_depth
-        print "max_if_depth:", self.max_if_depth
-        print "max_until_depth:", self.max_until_depth
-        print "max_repeat_depth:", self.max_repeat_depth
-        print "if_count:", self.if_count
-        print "until_count:", self.until_count
-        print "repeat_count:", self.repeat_count
+        print ("max_depth:", self.max_depth)
+        print ("max_if_depth:", self.max_if_depth)
+        print ("max_until_depth:", self.max_until_depth)
+        print ("max_repeat_depth:", self.max_repeat_depth)
+        print ("if_count:", self.if_count)
+        print ("until_count:", self.until_count)
+        print ("repeat_count:", self.repeat_count)
+        print("scrips_count:",self.scrips_count)
+        print("proj_count:",self.proj_count)
+        print("sprits_count:",self.sprits_count)
 
-    # Enter a parse tree produced by JSONParser#json.
+    # Enter a parse tree produced by AntlrParser#json.
     def enterJson(self, ctx):
         pass
 
-    # Exit a parse tree produced by JSONParser#json.
+    # Exit a parse tree produced by AntlrParser#json.
     def exitJson(self, ctx):
         self.print_all()
+        pass
 
 
-
-    # Enter a parse tree produced by JSONParser#obj.
+    # Enter a parse tree produced by AntlrParser#obj.
     def enterObj(self, ctx):
         pass
 
-    # Exit a parse tree produced by JSONParser#obj.
+    # Exit a parse tree produced by AntlrParser#obj.
     def exitObj(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by JSONParser#pair.
+    # Enter a parse tree produced by AntlrParser#pair.
     def enterPair(self, ctx):
+        if ctx.STRING():
+            if ctx.STRING().getText()== '"objName"':
+                if ctx.value().STRING().getText()!='"Stage"':
+                    #print(ctx.value().STRING().getText())
+                    self.sprits_count+=1
         pass
 
-    # Exit a parse tree produced by JSONParser#pair.
+    # Exit a parse tree produced by AntlrParser#pair.
     def exitPair(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by JSONParser#scripts_array.
+    # Enter a parse tree produced by AntlrParser#scripts_array.
     def enterScripts_array(self, ctx):
+        self.scrips_count+=1
         pass
 
-    # Exit a parse tree produced by JSONParser#scripts_array.
+    # Exit a parse tree produced by AntlrParser#scripts_array.
     def exitScripts_array(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by JSONParser#array.
+    # Enter a parse tree produced by AntlrParser#array.
     def enterArray(self, ctx):
         pass
 
-    # Exit a parse tree produced by JSONParser#array.
+    # Exit a parse tree produced by AntlrParser#array.
     def exitArray(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by JSONParser#blocks_array.
+    # Enter a parse tree produced by AntlrParser#blocks_array.
     def enterBlocks_array(self, ctx):
         pass
 
-    # Exit a parse tree produced by JSONParser#blocks_array.
+    # Exit a parse tree produced by AntlrParser#blocks_array.
     def exitBlocks_array(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by JSONParser#value.
+    # Enter a parse tree produced by AntlrParser#value.
     def enterValue(self, ctx):
         pass
 
-    # Exit a parse tree produced by JSONParser#value.
+    # Exit a parse tree produced by AntlrParser#value.
     def exitValue(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by JSONParser#cblock_value.
+    # Enter a parse tree produced by AntlrParser#cblock_value.
     def enterCblock_value(self, ctx):
         pass
 
-    # Exit a parse tree produced by JSONParser#cblock_value.
+    # Exit a parse tree produced by AntlrParser#cblock_value.
     def exitCblock_value(self, ctx):
         pass
 
 
-    # Enter a parse tree produced by JSONParser#cblock_doRepeat.
+    # Enter a parse tree produced by AntlrParser#cblock_doRepeat.
     def enterCblock_doRepeat(self, ctx):
-        self.depth += 1
-        self.repeat_count += 1
-        self.repeat_depth += 1
-
-        if self.depth > self.max_depth:
-            self.max_depth = self.depth
-        if self.repeat_depth > self.max_repeat_depth:
-            self.max_repeat_depth = self.repeat_depth
         pass
 
-    # Exit a parse tree produced by JSONParser#cblock_doRepeat.
+    # Exit a parse tree produced by AntlrParser#cblock_doRepeat.
     def exitCblock_doRepeat(self, ctx):
-        self.depth -= 1
-        self.repeat_depth += 1
-
         pass
 
 
-    # Enter a parse tree produced by JSONParser#cblock_doUntil.
+    # Enter a parse tree produced by AntlrParser#cblock_doUntil.
     def enterCblock_doUntil(self, ctx):
-        self.depth += 1
-        self.until_count += 1
-        self.until_depth += 1
-
-        if self.depth > self.max_depth:
-            self.max_depth = self.depth
-        if self.until_depth > self.max_until_depth:
-            self.max_until_depth = self.until_depth
         pass
 
-    # Exit a parse tree produced by JSONParser#cblock_doUntil.
+    # Exit a parse tree produced by AntlrParser#cblock_doUntil.
     def exitCblock_doUntil(self, ctx):
-        self.depth -= 1
-        self.until_depth -= 1
         pass
 
 
-    # Enter a parse tree produced by JSONParser#cblock_doIfElse.
+    # Enter a parse tree produced by AntlrParser#cblock_doIfElse.
     def enterCblock_doIfElse(self, ctx):
-        self.depth += 1
-        self.if_count += 1
-        self.if_depth += 1
-
-        if self.depth > self.max_depth:
-            self.max_depth = self.depth
-        if self.if_depth > self.max_if_depth:
-            self.max_if_depth = self.if_depth
         pass
 
-    # Exit a parse tree produced by JSONParser#cblock_doIfElse.
+    # Exit a parse tree produced by AntlrParser#cblock_doIfElse.
     def exitCblock_doIfElse(self, ctx):
-        self.depth -= 1
-        self.if_depth -= 1
         pass
 
 
-    # Enter a parse tree produced by JSONParser#cblock_doIF.
+    # Enter a parse tree produced by AntlrParser#cblock_doIF.
     def enterCblock_doIF(self, ctx):
-        self.depth += 1
-        self.if_count += 1
-        self.if_depth += 1
-
-        if self.depth > self.max_depth:
-            self.max_depth = self.depth
-        if self.if_depth > self.max_if_depth:
-            self.max_if_depth = self.if_depth
         pass
 
-    # Exit a parse tree produced by JSONParser#cblock_doIF.
+    # Exit a parse tree produced by AntlrParser#cblock_doIF.
     def exitCblock_doIF(self, ctx):
-        self.depth -= 1
-        self.if_depth -= 1
         pass
 
 
-    # Enter a parse tree produced by JSONParser#cblock_doWaitUntil.
+    # Enter a parse tree produced by AntlrParser#cblock_doWaitUntil.
     def enterCblock_doWaitUntil(self, ctx):
-        self.depth += 1
-        self.until_count += 1
-        self.until_depth += 1
-
-        if self.depth > self.max_depth:
-            self.max_depth = self.depth
-        if self.until_depth > self.max_until_depth:
-            self.max_until_depth = self.until_depth
         pass
 
-    # Exit a parse tree produced by JSONParser#cblock_doWaitUntil.
+    # Exit a parse tree produced by AntlrParser#cblock_doWaitUntil.
     def exitCblock_doWaitUntil(self, ctx):
-        self.depth -= 1
-        self.until_depth -= 1
         pass
 
 
-    # Enter a parse tree produced by JSONParser#cblock_doForever.
+    # Enter a parse tree produced by AntlrParser#cblock_doForever.
     def enterCblock_doForever(self, ctx):
         pass
 
-    # Exit a parse tree produced by JSONParser#cblock_doForever.
+    # Exit a parse tree produced by AntlrParser#cblock_doForever.
     def exitCblock_doForever(self, ctx):
         pass
 
