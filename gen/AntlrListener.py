@@ -20,8 +20,20 @@ class AntlrListener(ParseTreeListener):
         self.proj_count=0
         self.sprits_count=0
 
+
+        self.Synchronization = 0 #Synchronization得分
         self.FlowControl_score = 0 #FlowControl得分
         self.UserInteractivity = 0 #UserInteractivity得分
+        self.LogicalThinking = 0 #LogicalThinking得分
+        self.DataRepresentation = 1 #因为太多了，默认先直接给1分.....
+        self.score = {}
+
+    def create_score(self):
+        self.score['FlowControl'] = self.FlowControl_score
+        self.score['UserInteractivity'] = self.UserInteractivity
+        self.score['LogicalThinking'] = self.LogicalThinking
+        self.score['DataRepresentation'] = self.DataRepresentation
+        self.score['Synchronization'] = self.Synchronization
 
     def print_all(self):
         print ("max_depth:", self.max_depth)
@@ -34,6 +46,9 @@ class AntlrListener(ParseTreeListener):
         print("scrips_count:",self.scrips_count)
         print("proj_count:",self.proj_count)
         print("sprits_count:",self.sprits_count)
+        self.create_score()
+        print self.score
+
 
     # Enter a parse tree produced by AntlrParser#json.
     def enterJson(self, ctx):
@@ -56,12 +71,22 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#pair.
     def enterPair(self, ctx):
-        if ctx.STRING():
-            if ctx.STRING().getText()== '"objName"':
+        ctx_STRING = ctx.STRING()
+        if ctx_STRING:
+            ctx_STRING_Text = ctx_STRING.getText()
+            if ctx_STRING_Text == '"objName"':
                 if ctx.value().STRING().getText()!='"Stage"':
                     #print(ctx.value().STRING().getText())
                     self.sprits_count+=1
-        pass
+
+            if ctx_STRING_Text == '"variables"':
+                if self.DataRepresentation < 2:
+                    self.DataRepresentation = 2
+
+            if ctx_STRING_Text == '"lists"':
+                if self.DataRepresentation < 3:
+                    self.DataRepresentation = 3
+
 
     # Exit a parse tree produced by AntlrParser#pair.
     def exitPair(self, ctx):
@@ -107,7 +132,46 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#value.
     def enterValue(self, ctx):
-        pass
+        print(ctx.getText())
+        ctx_Text = ctx.getText()
+
+        if '"whenKeyPressed"' == ctx_Text:
+            if self.UserInteractivity < 2:
+                self.UserInteractivity = 2
+
+        if '"whenClicked"' == ctx_Text:
+            if self.UserInteractivity < 2:
+                self.UserInteractivity = 2
+
+        if '"doAsk"' == ctx_Text:
+            if self.UserInteractivity < 2:
+                self.UserInteractivity = 2
+
+        if '"setVideoState"' == ctx_Text:
+            if self.UserInteractivity < 3:
+                self.UserInteractivity = 3
+
+        if '"soundLevel"' == ctx_Text:
+            if self.UserInteractivity < 3:
+                self.UserInteractivity = 3
+
+        logic_operator = ('"&"', '"|"', '"not"', '"<"', '">"', '"="')
+        if (ctx_Text in logic_operator) and (self.LogicalThinking < 3):
+            self.LogicalThinking = 3
+
+        if '"wait:elapsed:from:"' == ctx_Text:
+            if self.Synchronization < 1:
+                self.Synchronization = 1
+
+        if ctx_Text in ('"stopScripts"', '"broadcast"',):
+            if self.Synchronization < 2:
+                self.Synchronization = 2
+
+        sync_3p = ('"whenSceneStarts"', '"doBroadcastAndWait"', '"doWaitUntil"')
+        if ctx_Text in sync_3p:
+            if self.Synchronization < 3:
+                self.Synchronization = 3
+
 
     # Exit a parse tree produced by AntlrParser#value.
     def exitValue(self, ctx):
@@ -150,6 +214,8 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_doIfElse.
     def enterCblock_doIfElse(self, ctx):
+        if self.LogicalThinking < 2:
+            self.UserInteractivity = 2
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doIfElse.
@@ -159,6 +225,8 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_doIF.
     def enterCblock_doIF(self, ctx):
+        if self.LogicalThinking < 1:
+            self.UserInteractivity = 1
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doIF.

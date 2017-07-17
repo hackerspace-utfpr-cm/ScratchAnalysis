@@ -34,8 +34,9 @@ def main(argv):
     parser = AntlrParser(stream)
     tree = parser.json()
     walker = ParseTreeWalker()
-    walker.walk(AntlrListener(), tree)
-
+    listener = AntlrListener()
+    walker.walk(listener, tree)
+    return listener.score
  
 if __name__ == '__main__':
     main(sys.argv)

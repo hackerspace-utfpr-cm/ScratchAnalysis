@@ -1,4 +1,7 @@
 *.pyc
-*.sb2
-project.json
+
 \.idea
+
+*.json
+
+*.sb2
