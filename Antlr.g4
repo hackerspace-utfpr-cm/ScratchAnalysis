@@ -16,7 +16,7 @@ pair
    ;
 
 scripts_array
-   : '[' '[' value ',' value ',' blocks_array ']' ']'
+   : '[' '[' value ',' value ',' blocks_array ']' (',' '[' value ',' value ',' blocks_array ']')* ']'
    ;
 
 
