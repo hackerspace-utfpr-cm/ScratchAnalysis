@@ -1,5 +1,4 @@
 # Generated from E:/new/antlrg/ScratchAnalysis\Antlr.g4 by ANTLR 4.7
-# -*- coding: utf-8 -*-
 from antlr4 import *
 
 # This class defines a complete listener for a parse tree produced by AntlrParser.
