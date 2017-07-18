@@ -18,8 +18,16 @@ class AntlrListener(ParseTreeListener):
         self.repeat_depth = 0
         self.proj_count=0
         self.sprits_count=0
+        self.wg_count=0
+        self.whenclick_count=0
+        self.whenkey_count=0
+        self.whdrop_count=0
+        self.whrecive_count=0
+        self.whsensor_count=0
 
 
+        self.A&p_score=0 #Abstraction and problem decomposition 得分
+        self.Parallelism_score=0 #Parallelism得分
         self.Synchronization = 0 #Synchronization得分
         self.FlowControl_score = 0 #FlowControl得分
         self.UserInteractivity = 0 #UserInteractivity得分
@@ -46,7 +54,7 @@ class AntlrListener(ParseTreeListener):
         print("proj_count:",self.proj_count)
         print("sprits_count:",self.sprits_count)
         self.create_score()
-        print self.score
+        print( self.score)
 
 
     # Enter a parse tree produced by AntlrParser#json.
@@ -77,6 +85,8 @@ class AntlrListener(ParseTreeListener):
                 if ctx.value().STRING().getText()!='"Stage"':
                     #print(ctx.value().STRING().getText())
                     self.sprits_count+=1
+                    if self.sprits_count>1 and self.scripts<1 and self.A&p_score==0:
+                        self.A&p_score=1
 
             if ctx_STRING_Text == '"variables"':
                 if self.DataRepresentation < 2:
@@ -133,12 +143,38 @@ class AntlrListener(ParseTreeListener):
     def enterValue(self, ctx):
         print(ctx.getText())
         ctx_Text = ctx.getText()
+        if ctx.value():
+            if ctx.value()[0].getText()=='"procDef"':
+                self.proj_count+=1
+                if self.proj_count>0 and self.A&p_score=1:
+                    self.A&p_score=2
+            if ctx.value()[0].getText()=='"whenCloned"':
+                self.clone_count+=1
+                if self.clone_count>0 and self.A&p_score==2:
+                    self.A&p_score=3
 
         if '"whenKeyPressed"' == ctx_Text:
+            self.whenkry_count+=1
+            if self.whenkey_count>1 and self.whenclick_count>1 and self.Parallelism_score==1:
+                self.Parallelism_score=2
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
+        if '"whenIReceive"'==ctx_Text:
+            self.whrecive_count+=1
+            if self.whdrop_count>1  or self.whrecive_count>1 or self.whsensor_count>1 and self.Parallelism_score==2:
+                self.Parallelism_score=3
+
+        if '"whenSensorGreaterThan"'==ctx_Text:
+            self.whsensor_count+=1
+            if self.whdrop_count>1  or self.whrecive_count>1 or self.whsensor_count>1 and self.Parallelism_score==2:
+                self.Parallelism_score=3
+
+
 
         if '"whenClicked"' == ctx_Text:
+            self.whenclick_count+=1
+            if self.whenkey_count>1 and self.whenclick_count>1 and self.Parallelism_score==1:
+                self.Parallelism_score=2
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
 
@@ -170,6 +206,10 @@ class AntlrListener(ParseTreeListener):
         if ctx_Text in sync_3p:
             if self.Synchronization < 3:
                 self.Synchronization = 3
+        if ctx_Text =='"whenSceneStarts"':
+            self.whdrop_count+=1
+            if self.whdrop_count>1  or self.whrecive_count>1 or self.whsensor_count>1 and self.Parallelism_score==2:
+                self.Parallelism_score=3
 
 
     # Exit a parse tree produced by AntlrParser#value.
@@ -182,6 +222,9 @@ class AntlrListener(ParseTreeListener):
         if ctx.WHENGREENFLAG():
             if self.UserInteractivity < 1:
                 self.UserInteractivity = 1
+            self.wg_count+=1
+            if self.wg_count>1 and self.Parallelism_score==0:
+                self.Parallelism_score=1
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_value.
