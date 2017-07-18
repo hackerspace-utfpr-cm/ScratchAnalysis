@@ -1,4 +1,4 @@
-# Generated from C:/Users/VivianSnow/Desktop/ScratchAnalysis\Antlr.g4 by ANTLR 4.7
+# Generated from E:/new/antlrg/ScratchAnalysis\Antlr.g4 by ANTLR 4.7
 # encoding: utf-8
 from __future__ import print_function
 from antlr4 import *

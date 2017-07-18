@@ -55,6 +55,7 @@ cblock_value
 
 cblock_doRepeat
    : '[' '"doRepeat"' ',' NUMBER ',' value ']'
+   |'[' '"doRepeat"' ',' value ',' value ']'
    ;
 
 cblock_doUntil
