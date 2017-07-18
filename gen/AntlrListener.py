@@ -11,7 +11,7 @@ class ANTLRListener(ParseTreeListener):
         self.if_count = 0
         self.until_count = 0
         self.repeat_count = 0
-        self.scrips_count=0
+        self.scripts_count=0
         self.depth = 0
         self.if_depth = 0
         self.until_depth = 0
@@ -51,7 +51,7 @@ class ANTLRListener(ParseTreeListener):
         print ("if_count:", self.if_count)
         print ("until_count:", self.until_count)
         print ("repeat_count:", self.repeat_count)
-        print("scrips_count:",self.scrips_count)
+        print("scripts_count:",self.scripts_count)
         print("proj_count:",self.proj_count)
         print("sprits_count:",self.sprits_count)
         self.create_score()
@@ -86,7 +86,7 @@ class ANTLRListener(ParseTreeListener):
                 if ctx.value().STRING().getText()!='"Stage"':
                     #print(ctx.value().STRING().getText())
                     self.sprits_count+=1
-                    if self.sprits_count>1 and self.scripts<1 and self.ap_score==0:
+                    if self.sprits_count>1 and self.scripts_count>1 and self.ap_score==0:#标准1-1
                         self.ap_score=1
 
             if ctx_STRING_Text == '"variables"':
@@ -105,8 +105,9 @@ class ANTLRListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#scripts_array.
     def enterScripts_array(self, ctx):
-        self.scrips_count+=1
-
+        self.scripts_count+=1#标准1-1
+        if self.sprits_count > 1 and self.scripts_count > 1 and self.ap_score <1:
+            self.ap_score = 1
         # 有scripts就给1分?
         if self.FlowControl_score < 1:
             self.FlowControl_score = 1
@@ -138,37 +139,37 @@ class ANTLRListener(ParseTreeListener):
     def enterValue(self, ctx):
         print(ctx.getText())
         ctx_Text = ctx.getText()
-        if ctx_Text=='"procDef"':
+        if ctx_Text=='"procDef"':#标准1-2
           #  if ctx.value()[0].getText()=='"procDef"':
             self.proj_count+=1
-            if self.proj_count>0 and self.ap_score==1:
+            if self.proj_count>0 and self.ap_score<2:
                 self.ap_score=2
-        if ctx_Text=='"whenCloned"':
+        if ctx_Text=='"whenCloned"':#标准1-3
             self.clone_count+=1
-            if self.clone_count>0 and self.ap_score==2:
+            if self.clone_count>0 and self.ap_score<3:
                 self.ap_score=3
 
         if '"whenKeyPressed"' == ctx_Text:
-            self.whenkry_count+=1
-            if self.whenkey_count>1 and self.whenclick_count>1 and self.Parallelism_score==1:
+            self.whenkey_count+=1
+            if self.whenkey_count>1 and self.whenclick_count>1 and self.Parallelism_score<2:#标准2-2
                 self.Parallelism_score=2
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
         if '"whenIReceive"'==ctx_Text:
             self.whrecive_count+=1
-            if self.whdrop_count>1  or self.whrecive_count>1 or self.whsensor_count>1 and self.Parallelism_score==2:
+            if self.whdrop_count>1  or self.whrecive_count>1 or self.whsensor_count>1 and self.Parallelism_score<3:#标准2-3
                 self.Parallelism_score=3
 
         if '"whenSensorGreaterThan"'==ctx_Text:
             self.whsensor_count+=1
-            if self.whdrop_count>1  or self.whrecive_count>1 or self.whsensor_count>1 and self.Parallelism_score==2:
+            if self.whdrop_count>1  or self.whrecive_count>1 or self.whsensor_count>1 and self.Parallelism_score<3:#标准2-3
                 self.Parallelism_score=3
 
 
 
         if '"whenClicked"' == ctx_Text:
             self.whenclick_count+=1
-            if self.whenkey_count>1 and self.whenclick_count>1 and self.Parallelism_score==1:
+            if self.whenkey_count>1 and self.whenclick_count>1 and self.Parallelism_score<2:#标准2-2
                 self.Parallelism_score=2
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
@@ -203,7 +204,7 @@ class ANTLRListener(ParseTreeListener):
                 self.Synchronization = 3
         if ctx_Text =='"whenSceneStarts"':
             self.whdrop_count+=1
-            if self.whdrop_count>1  or self.whrecive_count>1 or self.whsensor_count>1 and self.Parallelism_score==2:
+            if self.whdrop_count>1  or self.whrecive_count>1 or self.whsensor_count>1 and self.Parallelism_score<3:#标准2-3
                 self.Parallelism_score=3
 
 
@@ -218,7 +219,7 @@ class ANTLRListener(ParseTreeListener):
             if self.UserInteractivity < 1:
                 self.UserInteractivity = 1
             self.wg_count+=1
-            if self.wg_count>1 and self.Parallelism_score==0:
+            if self.wg_count>1 and self.Parallelism_score==0:#标准2-1
                 self.Parallelism_score=1
         pass
 
