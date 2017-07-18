@@ -1,8 +1,9 @@
 # Generated from E:/new/antlrg/ScratchAnalysis\Antlr.g4 by ANTLR 4.7
+# -*- coding: utf-8 -*-
 from antlr4 import *
 
 # This class defines a complete listener for a parse tree produced by AntlrParser.
-class ANTLRListener(ParseTreeListener):
+class AntlrListener(ParseTreeListener):
     def __init__(self):
         self.max_depth = 0
         self.max_if_depth = 0
@@ -137,7 +138,7 @@ class ANTLRListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#value.
     def enterValue(self, ctx):
-        print(ctx.getText())
+        # print(ctx.getText())
         ctx_Text = ctx.getText()
         if ctx_Text=='"procDef"':#标准1-2
           #  if ctx.value()[0].getText()=='"procDef"':
