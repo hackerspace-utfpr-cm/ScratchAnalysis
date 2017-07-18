@@ -3,7 +3,7 @@
 from antlr4 import *
 
 # This class defines a complete listener for a parse tree produced by AntlrParser.
-class AntlrListener(ParseTreeListener):
+class ANTLRListener(ParseTreeListener):
     def __init__(self):
         self.max_depth = 0
         self.max_if_depth = 0
@@ -20,6 +20,7 @@ class AntlrListener(ParseTreeListener):
         self.proj_count=0
         self.sprits_count=0
         self.wg_count=0
+        self.clone_count=0
         self.whenclick_count=0
         self.whenkey_count=0
         self.whdrop_count=0
@@ -27,7 +28,7 @@ class AntlrListener(ParseTreeListener):
         self.whsensor_count=0
 
 
-        self.A&p_score=0 #Abstraction and problem decomposition 得分
+        self.ap_score=0 #Abstraction and problem decomposition 得分
         self.Parallelism_score=0 #Parallelism得分
         self.Synchronization = 0 #Synchronization得分
         self.FlowControl_score = 0 #FlowControl得分
@@ -86,8 +87,8 @@ class AntlrListener(ParseTreeListener):
                 if ctx.value().STRING().getText()!='"Stage"':
                     #print(ctx.value().STRING().getText())
                     self.sprits_count+=1
-                    if self.sprits_count>1 and self.scripts<1 and self.A&p_score==0:
-                        self.A&p_score=1
+                    if self.sprits_count>1 and self.scripts<1 and self.ap_score==0:
+                        self.ap_score=1
 
             if ctx_STRING_Text == '"variables"':
                 if self.DataRepresentation < 2:
@@ -110,12 +111,6 @@ class AntlrListener(ParseTreeListener):
         # 有scripts就给1分?
         if self.FlowControl_score < 1:
             self.FlowControl_score = 1
-
-        gen = ctx.getChildren()
-        print(gen.next())
-        print(gen.next())
-        print(gen.next())
-
 
     # Exit a parse tree produced by AntlrParser#scripts_array.
     def exitScripts_array(self, ctx):
@@ -144,15 +139,15 @@ class AntlrListener(ParseTreeListener):
     def enterValue(self, ctx):
         print(ctx.getText())
         ctx_Text = ctx.getText()
-        if ctx.value():
-            if ctx.value()[0].getText()=='"procDef"':
-                self.proj_count+=1
-                if self.proj_count>0 and self.A&p_score=1:
-                    self.A&p_score=2
-            if ctx.value()[0].getText()=='"whenCloned"':
-                self.clone_count+=1
-                if self.clone_count>0 and self.A&p_score==2:
-                    self.A&p_score=3
+        if ctx_Text=='"procDef"':
+          #  if ctx.value()[0].getText()=='"procDef"':
+            self.proj_count+=1
+            if self.proj_count>0 and self.ap_score==1:
+                self.ap_score=2
+        if ctx_Text=='"whenCloned"':
+            self.clone_count+=1
+            if self.clone_count>0 and self.ap_score==2:
+                self.ap_score=3
 
         if '"whenKeyPressed"' == ctx_Text:
             self.whenkry_count+=1
