@@ -26,6 +26,7 @@ class AntlrListener(ParseTreeListener):
         self.whdrop_count=0
         self.whrecive_count=0
         self.whsensor_count=0
+        self.deadcode_count=0
 
 
         self.ap_score=0 #Abstraction and problem decomposition 得分
@@ -38,6 +39,8 @@ class AntlrListener(ParseTreeListener):
         self.score = {}
 
     def create_score(self):
+        self.score['Abstraction']=self.ap_score
+        self.score['Parallelism']=self.Parallelism_score
         self.score['FlowControl'] = self.FlowControl_score
         self.score['UserInteractivity'] = self.UserInteractivity
         self.score['LogicalThinking'] = self.LogicalThinking
@@ -55,6 +58,7 @@ class AntlrListener(ParseTreeListener):
         print("scripts_count:",self.scripts_count)
         print("proj_count:",self.proj_count)
         print("sprits_count:",self.sprits_count)
+        print("deadcode_count:", self.deadcode_count)
         self.create_score()
         print( self.score)
 
@@ -129,6 +133,9 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#blocks_array.
     def enterBlocks_array(self, ctx):
+        # print(ctx.getText().find("when"))
+        if ctx.getText().find("when")==-1:
+            self.deadcode_count+=1
         pass
 
     # Exit a parse tree produced by AntlrParser#blocks_array.
@@ -263,7 +270,37 @@ class AntlrListener(ParseTreeListener):
 
 
     # Enter a parse tree produced by AntlrParser#cblock_doIF.
-    def enterCblock_doIF(self, ctx):
+    def enterCblock_doIF(self, ctx):#将if中比较的两部分
+        ctx_Text=ctx.getText()
+        # print(ctx_Text)
+        # Varlist=['readVariable','lineCountOfList','randomFrom']
+        if ctx.getText().find('readVariable')>0 or ctx.getText().find('lineCountOfList')>0 or ctx.getText().find('randomFrom')>0:
+            return
+        elif ctx.getText().find('<')>0:
+            str1=ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
+            str2=str1.split(',')
+            v1=str2[1].strip('"')
+            v2=str2[2].strip('"')
+            # print(int(v1),int(v2))
+            if int(v1)>int(v2):
+                self.deadcode_count+=1
+        elif ctx.getText().find('>')>0:
+            str1=ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
+            str2=str1.split(',')
+            v1=str2[1].strip('"')
+            v2=str2[2].strip('"')
+            # print(int(v1),int(v2))
+            if int(v1)<int(v2):
+                self.deadcode_count+=1
+        elif ctx.getText().find('=')>0:
+            str1=ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
+            str2=str1.split(',')
+            v1=str2[1].strip('"')
+            v2=str2[2].strip('"')
+            # print(int(v1),int(v2))
+            if int(v1)!=int(v2):
+                self.deadcode_count+=1
+
         if self.LogicalThinking < 1:
             self.UserInteractivity = 1
         pass
