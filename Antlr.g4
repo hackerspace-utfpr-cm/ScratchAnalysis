@@ -12,6 +12,7 @@ obj
 
 pair
    : SCRIPTS ':' scripts_array
+   | SCRIPTCOMMENTS ':' comments_array
    | STRING ':' value
    ;
 
@@ -81,6 +82,14 @@ cblock_doForever
 
 procDef
    : '[' '"procDef"' ',' value ',' value ',' value ',' value ']'
+   ;
+
+comments_array
+   : '[' value (',' value)* ']'
+   ;
+
+SCRIPTCOMMENTS
+   : '"scriptComments"'
    ;
 
 SCRIPTS
