@@ -12,6 +12,7 @@ obj
 
 pair
    : SCRIPTS ':' scripts_array
+   | SCRIPTCOMMENTS ':' comments_array
    | STRING ':' value
    ;
 
@@ -52,6 +53,7 @@ cblock_value
    |cblock_doForever
    |cblock_doBroadcast
    |cblock_whenIReceive
+   |procDef
    |array
    ;
 
@@ -87,6 +89,18 @@ cblock_doBroadcast
 
 cblock_whenIReceive
    : '[' '"whenIReceive"' ',' STRING ']'
+   ;
+
+procDef
+   : '[' '"procDef"' ',' value ',' value ',' value ',' value ']'
+   ;
+
+comments_array
+   : '[' value (',' value)* ']'
+   ;
+
+SCRIPTCOMMENTS
+   : '"scriptComments"'
    ;
 
 SCRIPTS
