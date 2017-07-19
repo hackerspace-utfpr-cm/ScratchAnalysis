@@ -27,6 +27,10 @@ class AntlrListener(ParseTreeListener):
         self.whrecive_count=0
         self.whsensor_count=0
         self.deadcode_count=0
+        self.broadcastlist=[]
+        self.receivelist=[]
+        self.Meaningless_count=0
+        self.initit=0
 
 
         self.ap_score=0 #Abstraction and problem decomposition 得分
@@ -69,6 +73,17 @@ class AntlrListener(ParseTreeListener):
 
     # Exit a parse tree produced by AntlrParser#json.
     def exitJson(self, ctx):
+        if len(self.receivelist)!=len(self.broadcastlist):
+            print("广播不匹配")
+        else:
+            for r in self.receivelist:
+                if self.broadcastlist.count(r)==0:
+                    print("广播不匹配")
+                    self.deadcode_count+=1
+        if self.Meaningless_count>0:
+            print("有"+str(self.Meaningless_count)+"个角色存在无意义命名")
+        if self.initit>0:
+            print("可能未同步")
         self.print_all()
         pass
 
@@ -93,6 +108,8 @@ class AntlrListener(ParseTreeListener):
                     self.sprits_count+=1
                     if self.sprits_count>1 and self.scripts_count>1 and self.ap_score==0:#标准1-1
                         self.ap_score=1
+                if ctx.value().STRING().getText().find('Sprite')>0:
+                    self.Meaningless_count +=1
 
             if ctx_STRING_Text == '"variables"':
                 if self.DataRepresentation < 2:
@@ -110,6 +127,78 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#scripts_array.
     def enterScripts_array(self, ctx):
+        flag1=0
+        flag2=0
+        str2 = ctx.getText()
+        str3=str2
+        if str2.find('"hide"')>0:#关于初始化的几个方面
+            if str2.find('"show"')<0:
+                self.initit=1
+        if str2.find('"nextCostume"')>0:
+            if str2.find('"lookLike:"')<0:
+                self.initit = 1
+        if str2.find('"changeGraphicEffect:by:"')>0:
+            if str2.find('"setGraphicEffect:to:"')<0:
+                self.initit=1
+        if str2.find('"changeSizeBy:"')>0:
+            if str2.find('"setSizeTo:"')<0:
+                self.initit=1
+        if str2.find('"nextScene"') > 0:
+            if str2.find('"startScene"') < 0:
+                self.initit = 1
+        if str2.find('"turnRight:"') > 0 or  str2.find('"turnLeft:"') > 0 or  str2.find('"pointTowards:"') > 0 :
+            if str2.find('"heading:"') < 0:
+                self.initit = 1
+        if str2.find('"forward:"') > 0 or str2.find('"gotoSpriteOrMouse:"') > 0 or str2.find('"glideSecs:toX:y:elapsed:from:"')  > 0:
+            if str2.find('"gotoX:y:"') < 0:
+                self.initit = 1
+        if str2.find('"changeXposBy:"') > 0:
+            if str2.find('"xpos:"') < 0 and str2.find('"gotoX:y:"') < 0:
+                self.initit = 1
+        if str2.find('"changeYposBy:"') > 0:
+            if str2.find('"ypos:"') < 0 and str2.find('"gotoX:y:"') < 0:
+                self.initit = 1
+
+        # print(str2)
+        while str2.find("laySound")>0 and flag2==0:#处理音画同步
+            soundstr=str2[str2.find("laySound"):str2.find("laySound")+40]
+            sc=ctx.getText().find(soundstr);
+            str1=str2[str2.find("laySound"):]
+            s1 =str2.find("laySound")
+            str1=str1[:str1.find(']')]
+            str1 = str1.split(',')
+            str1=str1[1].strip('"')
+            #print(str1+"声音")
+            # dictsay.append(str1)
+            while str3.find("say")>0 and flag2==0:
+                saystr=str3[str3.find("say"):str3.find("say")+40]
+                sy=ctx.getText().find(saystr)
+                str4 = str3[str3.find("say"):]
+                # print(str4)
+                s2=str3.find("say")
+                str4 = str4[:str4.find(']')]
+                # print(str4)
+                str4 = str4.split(',')
+                str4 = str4[1].strip('"')
+                # print(str3)
+                if str4==str1 and sc<sy:
+                    print("声画不同步错误")
+                    flag2=1
+                    break
+                elif str4==str1 and sc>sy:
+                    str3=str3[s2:]
+                    # print(str3)
+                    # print("找到一个生化匹配")
+                    flag1=1
+                    break
+                else:
+                    str3 = str3[s2:]
+            str2 = str2[s1:]
+            if flag1==0:
+                str3=ctx.getText()
+            #print(str3)
+        # str3=str2[str2.find("playsound"):str2.find("]")]
+        # print(str1,str3)
         self.scripts_count+=1#标准1-1
         if self.sprits_count > 1 and self.scripts_count > 1 and self.ap_score <1:
             self.ap_score = 1
@@ -328,5 +417,38 @@ class AntlrListener(ParseTreeListener):
     # Exit a parse tree produced by AntlrParser#cblock_doForever.
     def exitCblock_doForever(self, ctx):
         pass
+    # Enter a parse tree produced by AntlrParser#cblock_doBroadcast.
+    def enterCblock_doBroadcast(self, ctx):
+        ctxText=ctx.getText()
+        # print(ctxText)
+        str1=ctxText.split(",")
+        str1=str1[1][:-2]
+        broadcastcontent=str1.strip('"')
+        if self.broadcastlist.count(broadcastcontent)==0:
+            self.broadcastlist.append(broadcastcontent)
+        # print(broadcastcontent+"发送")
+        pass
+
+    # Exit a parse tree produced by AntlrParser#cblock_doBroadcast.
+    def exitCblock_doBroadcast(self, ctx):
+        pass
+
+
+    # Enter a parse tree produced by AntlrParser#cblock_whenIReceive.
+    def enterCblock_whenIReceive(self, ctx):
+        ctxText = ctx.getText()
+        # print(ctxText)
+        str1 = ctxText.split(",")
+        str1 = str1[1][:-2]
+        receivecontent = str1.strip('"')
+        if self.receivelist.count(receivecontent) == 0:
+            self.receivelist.append(receivecontent)
+        # print(receivecontent+"接收")
+        pass
+
+    # Exit a parse tree produced by AntlrParser#cblock_whenIReceive.
+    def exitCblock_whenIReceive(self, ctx):
+        pass
+
 
 

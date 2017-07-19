@@ -50,6 +50,8 @@ cblock_value
    |cblock_doIF
    |cblock_doWaitUntil
    |cblock_doForever
+   |cblock_doBroadcast
+   |cblock_whenIReceive
    |array
    ;
 
@@ -76,6 +78,15 @@ cblock_doWaitUntil
 
 cblock_doForever
    : '[' '"doForever"' ',' value ']'
+   ;
+
+cblock_doBroadcast
+   : '[' '"broadcast:"' ',' STRING ']'
+   |'[' '"doBroadcastAndWait"' ',' STRING ']'
+   ;
+
+cblock_whenIReceive
+   : '[' '"whenIReceive"' ',' STRING ']'
    ;
 
 SCRIPTS
