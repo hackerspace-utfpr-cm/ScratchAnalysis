@@ -50,6 +50,7 @@ cblock_value
    |cblock_doIF
    |cblock_doWaitUntil
    |cblock_doForever
+   |procDef
    |array
    ;
 
@@ -76,6 +77,10 @@ cblock_doWaitUntil
 
 cblock_doForever
    : '[' '"doForever"' ',' value ']'
+   ;
+
+procDef
+   : '[' '"procDef"' ',' value ',' value ',' value ',' value ']'
    ;
 
 SCRIPTS
