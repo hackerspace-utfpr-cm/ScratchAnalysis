@@ -92,7 +92,7 @@ cblock_whenIReceive
    ;
 
 procDef
-   : '[' '"procDef"' ',' value ',' value ',' value ',' value ']'
+   : '[' '"procDef"' ',' value ',' value ',' value ',' value ']'(',' cblock_value)*
    ;
 
 comments_array
