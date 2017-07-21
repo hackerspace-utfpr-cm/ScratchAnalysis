@@ -14,6 +14,7 @@ class AntlrListener(ParseTreeListener):
         self.until_count = 0
         self.repeat_count = 0
         self.scripts_count = 0
+        self.comments_count = 0
         self.depth = 0
         self.if_depth = 0
         self.until_depth = 0
@@ -62,6 +63,7 @@ class AntlrListener(ParseTreeListener):
         print("until_count:", self.until_count)
         print("repeat_count:", self.repeat_count)
         print("scripts_count:", self.scripts_count)
+        print("comments_count:", self.comments_count)
         print("proj_count:", self.proj_count)
         print("sprits_count:", self.sprits_count)
         print("deadcode_count:", self.deadcode_count)
@@ -86,7 +88,7 @@ class AntlrListener(ParseTreeListener):
         if self.initit > 0:#是否同步
             print("可能未同步")
         if self.Recursively>0:#是否使用了递归
-            print("使用了递归")
+            print("使用了" + str(self.Recursively)+"次递归")
         if self.SayandSound>0:#是否声画同步
             print("声画不同步")
         self.print_all()
@@ -460,6 +462,7 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#comments_array.
     def enterComments_array(self, ctx):
+        self.comments_count += 1
         pass
 
     # Exit a parse tree produced by AntlrParser#comments_array.
