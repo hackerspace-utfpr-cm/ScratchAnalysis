@@ -14,6 +14,7 @@ class AntlrListener(ParseTreeListener):
         self.until_count = 0#until语句的数量
         self.repeat_count = 0#repeat语句的数量
         self.scripts_count = 0#脚本语句scripts的数量
+        self.comments_count = 0#代码评论的数目
         self.depth = 0#总深度
         self.if_depth = 0#if语句的深度
         self.until_depth = 0#until语句的深度
@@ -62,6 +63,7 @@ class AntlrListener(ParseTreeListener):
         print("until_count:", self.until_count)
         print("repeat_count:", self.repeat_count)
         print("scripts_count:", self.scripts_count)
+        print("comments_count:", self.comments_count)
         print("proj_count:", self.proj_count)
         print("sprits_count:", self.sprits_count)
         print("deadcode_count:", self.deadcode_count)
@@ -422,12 +424,14 @@ class AntlrListener(ParseTreeListener):
     # 发送广播模块发送的内容
     def enterCblock_doBroadcast(self, ctx):
         ctxText = ctx.getText()
+        # print(ctxText)
         str1 = ctxText.split(",")
         str1 = str1[1][:-2]
         broadcastcontent = str1.strip('"')
         # 判断是否发送过该该内容
         if self.broadcastlist.count(broadcastcontent) == 0:
             self.broadcastlist.append(broadcastcontent)
+        # print(broadcastcontent+"发送")
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doBroadcast.
@@ -438,12 +442,14 @@ class AntlrListener(ParseTreeListener):
     #得到接收广播得到的内容
     def enterCblock_whenIReceive(self, ctx):
         ctxText = ctx.getText()
+        # print(ctxText)
         str1 = ctxText.split(",")
         str1 = str1[1][:-2]
         receivecontent = str1.strip('"')
         # 判断是是否已经收到过该内容
         if self.receivelist.count(receivecontent) == 0:
             self.receivelist.append(receivecontent)
+        # print(receivecontent+"接收")
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_whenIReceive.
@@ -468,6 +474,7 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#comments_array.
     def enterComments_array(self, ctx):
+        self.comments_count += 1
         pass
 
     # Exit a parse tree produced by AntlrParser#comments_array.
