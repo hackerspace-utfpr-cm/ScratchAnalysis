@@ -424,14 +424,12 @@ class AntlrListener(ParseTreeListener):
     # 发送广播模块发送的内容
     def enterCblock_doBroadcast(self, ctx):
         ctxText = ctx.getText()
-        # print(ctxText)
         str1 = ctxText.split(",")
         str1 = str1[1][:-2]
         broadcastcontent = str1.strip('"')
         # 判断是否发送过该该内容
         if self.broadcastlist.count(broadcastcontent) == 0:
             self.broadcastlist.append(broadcastcontent)
-        # print(broadcastcontent+"发送")
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doBroadcast.
@@ -442,14 +440,12 @@ class AntlrListener(ParseTreeListener):
     #得到接收广播得到的内容
     def enterCblock_whenIReceive(self, ctx):
         ctxText = ctx.getText()
-        # print(ctxText)
         str1 = ctxText.split(",")
         str1 = str1[1][:-2]
         receivecontent = str1.strip('"')
         # 判断是是否已经收到过该内容
         if self.receivelist.count(receivecontent) == 0:
             self.receivelist.append(receivecontent)
-        # print(receivecontent+"接收")
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_whenIReceive.
