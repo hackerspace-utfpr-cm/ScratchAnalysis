@@ -23,8 +23,8 @@ def unzip_scratch(filename):
         return None
 
 
-def main(argv):
-    raw_json = unzip_scratch(argv[1])
+def gen(argv):
+    raw_json = unzip_scratch(argv)
     encoded_json = codecs.decode(raw_json, 'utf-8', 'strict')
     input = InputStream(encoded_json)
     if not input:
@@ -36,7 +36,7 @@ def main(argv):
     walker = ParseTreeWalker()
     listener = AntlrListener()
     walker.walk(listener, tree)
-    return listener.score
+    return listener.score, listener.hint
  
 if __name__ == '__main__':
-    main(sys.argv)
+    gen(sys.argv[1])

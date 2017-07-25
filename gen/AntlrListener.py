@@ -1,5 +1,6 @@
 # Generated from E:/new/antlrg/ScratchAnalysis\Antlr.g4 by ANTLR 4.7
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from antlr4 import *
 
 
@@ -44,6 +45,8 @@ class AntlrListener(ParseTreeListener):
         self.LogicalThinking = 0  # LogicalThinking得分
         self.DataRepresentation = 1  # 因为太多了，默认先直接给1分.....
         self.score = {}
+        self.hint = []
+        self.Meaningless_list = []
 
     def create_score(self):
         self.score['Abstraction'] = self.ap_score
@@ -55,18 +58,20 @@ class AntlrListener(ParseTreeListener):
         self.score['Synchronization'] = self.Synchronization
 
     def print_all(self):
-        print("max_depth:", self.max_depth)
-        print("max_if_depth:", self.max_if_depth)
-        print("max_until_depth:", self.max_until_depth)
-        print("max_repeat_depth:", self.max_repeat_depth)
-        print("if_count:", self.if_count)
-        print("until_count:", self.until_count)
-        print("repeat_count:", self.repeat_count)
-        print("scripts_count:", self.scripts_count)
-        print("comments_count:", self.comments_count)
-        print("proj_count:", self.proj_count)
-        print("sprits_count:", self.sprits_count)
-        print("deadcode_count:", self.deadcode_count)
+        # ---------------------------------------------------------------------
+        # print("max_depth:", self.max_depth)
+        # print("max_if_depth:", self.max_if_depth)
+        # print("max_until_depth:", self.max_until_depth)
+        # print("max_repeat_depth:", self.max_repeat_depth)
+        # print("if_count:", self.if_count)
+        # print("until_count:", self.until_count)
+        # print("repeat_count:", self.repeat_count)
+        # print("scripts_count:", self.scripts_count)
+        # print("comments_count:", self.comments_count)
+        # print("proj_count:", self.proj_count)
+        # print("sprits_count:", self.sprits_count)
+        # print("deadcode_count:", self.deadcode_count)
+        # ---------------------------------------------------------------------
         self.create_score()
         print(self.score)
 
@@ -78,27 +83,35 @@ class AntlrListener(ParseTreeListener):
     def exitJson(self, ctx):
         # 是否有不匹配的广播
         if len(self.receivelist) != len(self.broadcastlist):
-            print("广播不匹配")
+            self.hint.append("广播不匹配")
+            # print("广播不匹配")
         else:
             for r in self.receivelist:
                 if self.broadcastlist.count(r) == 0:
-                    print("广播不匹配")
+                    # print("广播不匹配")
+                    if "广播不匹配" not in self.hint:
+                        self.hint.append("广播不匹配")
                     self.deadcode_count += 1
         # 是否有无意义的角色命名
         if self.Meaningless_count > 0:
-            print("有" + str(self.Meaningless_count) + "个角色存在无意义命名")
+            s = "有" + str(self.Meaningless_count) + "个角色存在无意义命名,分别是:"
+            # print("有" + str(self.Meaningless_count) + "个角色存在无意义命名,分别是:"),
+            for i in self.Meaningless_list:
+                s += i
+            self.hint.append(s)
         # 是否进行初始化
         if self.initit > 0:
-            print("可能未初始化")
+            # print("可能未初始化")
+            self.hint.append("可能未初始化")
         # 是否使用了递归
-        if self.Recursively>0:
-            print("使用了递归")
+        if self.Recursively> 0:
+            # print("使用了" + str(self.Recursively) + "次递归")
+            self.hint.append("使用了" + str(self.Recursively) + "次递归")
         # 是否声画同步
         if self.SayandSound>0:
-            print("声画不同步")
+            self.hint.append("声画不同步")
+            # print("声画不同步")
         self.print_all()
-
-        pass
 
     # Enter a parse tree produced by AntlrParser#obj.
     def enterObj(self, ctx):
@@ -123,6 +136,7 @@ class AntlrListener(ParseTreeListener):
                 #是否存在无意义命名
                 if ctx.value().STRING().getText().find('Sprite') > 0 or ctx.value().STRING().getText().find('角色') > 0:
                     self.Meaningless_count += 1
+                    self.Meaningless_list.append(ctx.value().STRING().getText().strip('"'))
 
             if ctx_STRING_Text == '"variables"':
                 if self.DataRepresentation < 2:
