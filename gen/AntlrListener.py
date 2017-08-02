@@ -428,7 +428,7 @@ class AntlrListener(ParseTreeListener):
         str1 = str1[1][:-2]
         broadcastcontent = str1.strip('"')
         # 判断是否发送过该该内容
-        if self.broadcastlist.count(broadcastcontent) == 0:
+        if broadcastcontent.find("readVariable")<0 and  self.broadcastlist.count(broadcastcontent) == 0:
             self.broadcastlist.append(broadcastcontent)
         pass
 

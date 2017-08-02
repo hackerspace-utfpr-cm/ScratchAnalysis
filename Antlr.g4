@@ -83,8 +83,10 @@ cblock_doForever
    ;
 
 cblock_doBroadcast
-   : '[' '"broadcast:"' ',' STRING ']'
-   |'[' '"doBroadcastAndWait"' ',' STRING ']'
+   : '[' '"broadcast:"' ',' array ']'
+   |'[' '"broadcast:"' ',' STRING ']'
+   |'[' '"doBroadcastAndWait"' ',' array ']'
+    |'[' '"doBroadcastAndWait"' ',' STRING ']'
    ;
 
 cblock_whenIReceive
