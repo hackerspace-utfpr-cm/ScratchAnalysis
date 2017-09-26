@@ -7,7 +7,9 @@ from AntlrListener import AntlrListener
 import zipfile
 import os
 import codecs
-
+import time
+# from numba import jit
+from timeit import timeit
 
 def unzip_scratch(filename):
     """
@@ -21,7 +23,6 @@ def unzip_scratch(filename):
         return data
     else:
         return None
-
 
 def gen(argv):
     raw_json = unzip_scratch(argv)
@@ -39,4 +40,5 @@ def gen(argv):
     return listener.score, listener.hint
  
 if __name__ == '__main__':
-    gen(sys.argv[1])
+    during = timeit(stmt="gen(sys.argv[1])", setup="from Gen import gen;", number=1)
+    print(during)
