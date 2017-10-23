@@ -48,6 +48,8 @@ class AntlrListener(ParseTreeListener):
         self.hint = []
         self.Meaningless_list = []
 
+        self.have_insert = False
+
     def create_score(self):
         self.score['Abstraction'] = self.ap_score
         self.score['Parallelism'] = self.Parallelism_score
@@ -73,7 +75,7 @@ class AntlrListener(ParseTreeListener):
         # print("deadcode_count:", self.deadcode_count)
         # ---------------------------------------------------------------------
         self.create_score()
-        print(self.score)
+        # print(self.score)
 
     # Enter a parse tree produced by AntlrParser#json.
     def enterJson(self, ctx):
@@ -81,36 +83,12 @@ class AntlrListener(ParseTreeListener):
 
     # Exit a parse tree produced by AntlrParser#json.
     def exitJson(self, ctx):
-        # 是否有不匹配的广播
-        if len(self.receivelist) != len(self.broadcastlist):
-            self.hint.append("广播不匹配")
-            # print("广播不匹配")
-        else:
-            for r in self.receivelist:
-                if self.broadcastlist.count(r) == 0:
-                    # print("广播不匹配")
-                    if "广播不匹配" not in self.hint:
-                        self.hint.append("广播不匹配")
-                    self.deadcode_count += 1
-        # 是否有无意义的角色命名
-        if self.Meaningless_count > 0:
-            s = "有" + str(self.Meaningless_count) + "个角色存在无意义命名,分别是:"
-            # print("有" + str(self.Meaningless_count) + "个角色存在无意义命名,分别是:"),
-            for i in self.Meaningless_list:
-                s += i
-            self.hint.append(s)
-        # 是否进行初始化
-        if self.initit > 0:
-            # print("可能未初始化")
-            self.hint.append("可能未初始化")
         # 是否使用了递归
         if self.Recursively> 0:
+            if self.LogicalThinking < 3:
+                self.LogicalThinking = 3
             # print("使用了" + str(self.Recursively) + "次递归")
-            self.hint.append("使用了" + str(self.Recursively) + "次递归")
-        # 是否声画同步
-        if self.SayandSound>0:
-            self.hint.append("声画不同步")
-            # print("声画不同步")
+            # self.hint.append("使用了" + str(self.Recursively) + "次递归")
         self.print_all()
 
     # Enter a parse tree produced by AntlrParser#obj.
@@ -133,10 +111,6 @@ class AntlrListener(ParseTreeListener):
                     # 评分标准1-1
                     if self.sprits_count > 1 and self.scripts_count > 1 and self.ap_score == 0:
                         self.ap_score = 1
-                #是否存在无意义命名
-                if ctx.value().STRING().getText().find('Sprite') > 0 or ctx.value().STRING().getText().find('角色') > 0:
-                    self.Meaningless_count += 1
-                    self.Meaningless_list.append(ctx.value().STRING().getText().strip('"'))
 
             if ctx_STRING_Text == '"variables"':
                 if self.DataRepresentation < 2:
@@ -152,74 +126,74 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#scripts_array.
     def enterScripts_array(self, ctx):
-        flag1 = 0
-        flag2 = 0
-        str2 = ctx.getText()
-        str3 = str2
-        # 关于初始化的几个方面
-        #关于显示隐藏的初始化
-        if str2.find('"hide"') > 0:
-            if str2.find('"show"') < 0:
-                self.initit = 1
-        #关于角色造型的初始化
-        if str2.find('"nextCostume"') > 0:
-            if str2.find('"lookLike:"') < 0:
-                self.initit = 1
-        #关于角色大小的初始化
-        if str2.find('"changeSizeBy:"') > 0:
-            if str2.find('"setSizeTo:"') < 0:
-                self.initit = 1
-        #关于背景变化的初始化
-        if str2.find('"nextScene"') > 0:
-            if str2.find('"startScene"') < 0:
-                self.initit = 1
-        #关于角色方向的初始化
-        if str2.find('"turnRight:"') > 0 or str2.find('"turnLeft:"') > 0 or str2.find('"pointTowards:"') > 0:
-            if str2.find('"heading:"') < 0:
-                self.initit = 1
-        #关于角色位置的初始化
-        if str2.find('"forward:"') > 0 or str2.find('"gotoSpriteOrMouse:"') > 0 or str2.find(
-                '"glideSecs:toX:y:elapsed:from:"') > 0:
-            if str2.find('"gotoX:y:"') < 0:
-                self.initit = 1
-        #关于x坐标的初始化
-        if str2.find('"changeXposBy:"') > 0:
-            if str2.find('"xpos:"') < 0 and str2.find('"gotoX:y:"') < 0:
-                self.initit = 1
-        # 关于y坐标的初始化
-        if str2.find('"changeYposBy:"') > 0:
-            if str2.find('"ypos:"') < 0 and str2.find('"gotoX:y:"') < 0:
-                self.initit = 1
-        # 处理音画同步，要求是画面必须出现在声音之前
-        while str2.find("laySound") > 0 and flag2 == 0:
-            soundstr = str2[str2.find("laySound"):str2.find("laySound") + 40]
-            sc = ctx.getText().find(soundstr);
-            str1 = str2[str2.find("laySound"):]
-            s1 = str2.find("laySound")
-            str1 = str1[:str1.find(']')]
-            str1 = str1.split(',')
-            str1 = str1[1].strip('"')
-            while str3.find("say") > 0 and flag2 == 0:
-                saystr = str3[str3.find("say"):str3.find("say") + 40]
-                sy = ctx.getText().find(saystr)
-                str4 = str3[str3.find("say"):]
-                s2 = str3.find("say")
-                str4 = str4[:str4.find(']')]
-                str4 = str4.split(',')
-                str4 = str4[1].strip('"')
-                if str4 == str1 and sc < sy:
-                    self.SayandSound+=1
-                    flag2 = 1
-                    break
-                elif str4 == str1 and sc > sy:
-                    str3 = str3[s2:]
-                    flag1 = 1
-                    break
-                else:
-                    str3 = str3[s2:]
-            str2 = str2[s1:]
-            if flag1 == 0:
-                str3 = ctx.getText()
+        # flag1 = 0
+        # flag2 = 0
+        # str2 = ctx.getText()
+        # str3 = str2
+        # # 关于初始化的几个方面
+        # #关于显示隐藏的初始化
+        # if str2.find('"hide"') > 0:
+        #     if str2.find('"show"') < 0:
+        #         self.initit = 1
+        # #关于角色造型的初始化
+        # if str2.find('"nextCostume"') > 0:
+        #     if str2.find('"lookLike:"') < 0:
+        #         self.initit = 1
+        # #关于角色大小的初始化
+        # if str2.find('"changeSizeBy:"') > 0:
+        #     if str2.find('"setSizeTo:"') < 0:
+        #         self.initit = 1
+        # #关于背景变化的初始化
+        # if str2.find('"nextScene"') > 0:
+        #     if str2.find('"startScene"') < 0:
+        #         self.initit = 1
+        # #关于角色方向的初始化
+        # if str2.find('"turnRight:"') > 0 or str2.find('"turnLeft:"') > 0 or str2.find('"pointTowards:"') > 0:
+        #     if str2.find('"heading:"') < 0:
+        #         self.initit = 1
+        # #关于角色位置的初始化
+        # if str2.find('"forward:"') > 0 or str2.find('"gotoSpriteOrMouse:"') > 0 or str2.find(
+        #         '"glideSecs:toX:y:elapsed:from:"') > 0:
+        #     if str2.find('"gotoX:y:"') < 0:
+        #         self.initit = 1
+        # #关于x坐标的初始化
+        # if str2.find('"changeXposBy:"') > 0:
+        #     if str2.find('"xpos:"') < 0 and str2.find('"gotoX:y:"') < 0:
+        #         self.initit = 1
+        # # 关于y坐标的初始化
+        # if str2.find('"changeYposBy:"') > 0:
+        #     if str2.find('"ypos:"') < 0 and str2.find('"gotoX:y:"') < 0:
+        #         self.initit = 1
+        # # 处理音画同步，要求是画面必须出现在声音之前
+        # while str2.find("laySound") > 0 and flag2 == 0:
+        #     soundstr = str2[str2.find("laySound"):str2.find("laySound") + 40]
+        #     sc = ctx.getText().find(soundstr);
+        #     str1 = str2[str2.find("laySound"):]
+        #     s1 = str2.find("laySound")
+        #     str1 = str1[:str1.find(']')]
+        #     str1 = str1.split(',')
+        #     str1 = str1[1].strip('"')
+        #     while str3.find("say") > 0 and flag2 == 0:
+        #         saystr = str3[str3.find("say"):str3.find("say") + 40]
+        #         sy = ctx.getText().find(saystr)
+        #         str4 = str3[str3.find("say"):]
+        #         s2 = str3.find("say")
+        #         str4 = str4[:str4.find(']')]
+        #         str4 = str4.split(',')
+        #         str4 = str4[1].strip('"')
+        #         if str4 == str1 and sc < sy:
+        #             self.SayandSound+=1
+        #             flag2 = 1
+        #             break
+        #         elif str4 == str1 and sc > sy:
+        #             str3 = str3[s2:]
+        #             flag1 = 1
+        #             break
+        #         else:
+        #             str3 = str3[s2:]
+        #     str2 = str2[s1:]
+        #     if flag1 == 0:
+        #         str3 = ctx.getText()
         # 评分标准1-1
         self.scripts_count += 1
         if self.sprits_count > 1 and self.scripts_count > 1 and self.ap_score < 1:
@@ -243,8 +217,6 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#blocks_array.
     def enterBlocks_array(self, ctx):
         #检测没有控制模块开始的代码块，认定为死代码
-        if ctx.getText().find("when") == -1:
-            self.deadcode_count += 1
         pass
 
     # Exit a parse tree produced by AntlrParser#blocks_array.
@@ -254,11 +226,6 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#value.
     def enterValue(self, ctx):
         ctx_Text = ctx.getText()
-        # 评分标准1-2
-        if ctx_Text == '"procDef"':
-            self.proj_count += 1
-            if self.proj_count > 0 and self.ap_score < 2:
-                self.ap_score = 2
         # 评分标准1-3
         if ctx_Text == '"whenCloned"':
             self.clone_count += 1
@@ -272,6 +239,7 @@ class AntlrListener(ParseTreeListener):
                 self.Parallelism_score = 2
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
+
         if '"whenIReceive"' == ctx_Text:
             self.whrecive_count += 1
             # 评分标准2-3
@@ -326,6 +294,13 @@ class AntlrListener(ParseTreeListener):
             if self.whdrop_count > 1 or self.whrecive_count > 1 or self.whsensor_count > 1 and self.Parallelism_score < 3:
                 self.Parallelism_score = 3
 
+        if ctx_Text == '"insert:at:ofList:"':
+            self.have_insert = True
+
+        if ctx_Text == '"deleteLine:ofList"':
+            if self.ap_score < 3:
+                self.ap_score = 3
+
     # Exit a parse tree produced by AntlrParser#value.
     def exitValue(self, ctx):
         pass
@@ -378,35 +353,35 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#cblock_doIF.
     # 将if中比较静态的两部分进行比较,得到某部分是不是死代码
     def enterCblock_doIF(self, ctx):
-        ctx_Text = ctx.getText()
-        #去掉关于变量、列表和随机生成的内容
-        if ctx.getText().find('readVariable') > 0 or ctx.getText().find('lineCountOfList') > 0 or ctx.getText().find(
-                'randomFrom') > 0:
-            return
-        #判断“<”号左右两边是否能匹配
-        elif ctx.getText().find('<') > 0:
-            str1 = ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
-            str2 = str1.split(',')
-            v1 = str2[1].strip('"')
-            v2 = str2[2].strip('"')
-            if int(v1) > int(v2):
-                self.deadcode_count += 1
-        # 判断“>”号左右两边是否能匹配
-        elif ctx.getText().find('>') > 0:
-            str1 = ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
-            str2 = str1.split(',')
-            v1 = str2[1].strip('"')
-            v2 = str2[2].strip('"')
-            if int(v1) < int(v2):
-                self.deadcode_count += 1
-        # 判断“=”号左右两边是否能匹配
-        elif ctx.getText().find('=') > 0:
-            str1 = ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
-            str2 = str1.split(',')
-            v1 = str2[1].strip('"')
-            v2 = str2[2].strip('"')
-            if int(v1) != int(v2):
-                self.deadcode_count += 1
+        # ctx_Text = ctx.getText()
+        # #去掉关于变量、列表和随机生成的内容
+        # if ctx.getText().find('readVariable') > 0 or ctx.getText().find('lineCountOfList') > 0 or ctx.getText().find(
+        #         'randomFrom') > 0:
+        #     return
+        # #判断“<”号左右两边是否能匹配
+        # elif ctx.getText().find('<') > 0:
+        #     str1 = ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
+        #     str2 = str1.split(',')
+        #     v1 = str2[1].strip('"')
+        #     v2 = str2[2].strip('"')
+        #     if int(v1) > int(v2):
+        #         self.deadcode_count += 1
+        # # 判断“>”号左右两边是否能匹配
+        # elif ctx.getText().find('>') > 0:
+        #     str1 = ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
+        #     str2 = str1.split(',')
+        #     v1 = str2[1].strip('"')
+        #     v2 = str2[2].strip('"')
+        #     if int(v1) < int(v2):
+        #         self.deadcode_count += 1
+        # # 判断“=”号左右两边是否能匹配
+        # elif ctx.getText().find('=') > 0:
+        #     str1 = ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
+        #     str2 = str1.split(',')
+        #     v1 = str2[1].strip('"')
+        #     v2 = str2[2].strip('"')
+        #     if int(v1) != int(v2):
+        #         self.deadcode_count += 1
         #评分标准6-1
         if self.LogicalThinking < 1:
             self.UserInteractivity = 1
@@ -437,13 +412,13 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#cblock_doBroadcast.
     # 发送广播模块发送的内容
     def enterCblock_doBroadcast(self, ctx):
-        ctxText = ctx.getText()
-        str1 = ctxText.split(",")
-        str1 = str1[1][:-2]
-        broadcastcontent = str1.strip('"')
-        # 判断是否发送过该该内容
-        if broadcastcontent.find("readVariable")<0 and  self.broadcastlist.count(broadcastcontent) == 0:
-            self.broadcastlist.append(broadcastcontent)
+        # ctxText = ctx.getText()
+        # str1 = ctxText.split(",")
+        # str1 = str1[1][:-2]
+        # broadcastcontent = str1.strip('"')
+        # # 判断是否发送过该该内容
+        # if self.broadcastlist.count(broadcastcontent) == 0:
+        #     self.broadcastlist.append(broadcastcontent)
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doBroadcast.
@@ -453,13 +428,13 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#cblock_whenIReceive.
     #得到接收广播得到的内容
     def enterCblock_whenIReceive(self, ctx):
-        ctxText = ctx.getText()
-        str1 = ctxText.split(",")
-        str1 = str1[1][:-2]
-        receivecontent = str1.strip('"')
+        # ctxText = ctx.getText()
+        # str1 = ctxText.split(",")
+        # str1 = str1[1][:-2]
+        # receivecontent = str1.strip('"')
         # 判断是是否已经收到过该内容
-        if self.receivelist.count(receivecontent) == 0:
-            self.receivelist.append(receivecontent)
+        # if self.receivelist.count(receivecontent) == 0:
+        #     self.receivelist.append(receivecontent)
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_whenIReceive.
@@ -470,12 +445,20 @@ class AntlrListener(ParseTreeListener):
 
     #判断是否含有递归存在
     def enterProcDef(self, ctx):
+        self.proj_count += 1
+        if self.proj_count > 0 and self.ap_score < 2:
+            self.ap_score = 2
+
         ctxText = ctx.getText()
-        procname=ctx.value()[0].getText().strip('"')
-        if ctxText.find('"call"')>0:
-            str1=ctxText[ctxText.find('"call"'):]
-            if str1.find(procname)>0:
-                self.Recursively+=1;
+        ctxValue = ctx.value()
+        if ctxValue:
+            procname=ctxValue[0].getText().strip('"')
+            if ctxText.find('"call"') > 0:
+                str1=ctxText[ctxText.find('"call"'):]
+                if str1.find(procname) > 0:
+                    self.Recursively += 1
+                    if self.LogicalThinking < 3:
+                        self.LogicalThinking = 3
         pass
 
     # Exit a parse tree produced by AntlrParser#procDef.
@@ -484,7 +467,6 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#comments_array.
     def enterComments_array(self, ctx):
-        self.comments_count += 1
         pass
 
     # Exit a parse tree produced by AntlrParser#comments_array.
