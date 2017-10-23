@@ -48,6 +48,8 @@ class AntlrListener(ParseTreeListener):
         self.hint = []
         self.Meaningless_list = []
 
+        self.have_insert = False
+
     def create_score(self):
         self.score['Abstraction'] = self.ap_score
         self.score['Parallelism'] = self.Parallelism_score
@@ -73,7 +75,7 @@ class AntlrListener(ParseTreeListener):
         # print("deadcode_count:", self.deadcode_count)
         # ---------------------------------------------------------------------
         self.create_score()
-        print(self.score)
+        # print(self.score)
 
     # Enter a parse tree produced by AntlrParser#json.
     def enterJson(self, ctx):
@@ -296,6 +298,13 @@ class AntlrListener(ParseTreeListener):
             if self.whdrop_count > 1 or self.whrecive_count > 1 or self.whsensor_count > 1 and self.Parallelism_score < 3:
                 self.Parallelism_score = 3
 
+        if ctx_Text == '"insert:at:ofList:"':
+            self.have_insert = True
+
+        if ctx_Text == '"deleteLine:ofList"':
+            if self.ap_score < 3:
+                self.ap_score = 3
+
     # Exit a parse tree produced by AntlrParser#value.
     def exitValue(self, ctx):
         pass
@@ -444,10 +453,12 @@ class AntlrListener(ParseTreeListener):
         ctxValue = ctx.value()
         if ctxValue:
             procname=ctxValue[0].getText().strip('"')
-            if ctxText.find('"call"')>0:
+            if ctxText.find('"call"') > 0:
                 str1=ctxText[ctxText.find('"call"'):]
-                if str1.find(procname)>0:
-                    self.Recursively+=1;
+                if str1.find(procname) > 0:
+                    self.Recursively += 1
+                    if self.LogicalThinking < 3:
+                        self.LogicalThinking = 3
         pass
 
     # Exit a parse tree produced by AntlrParser#procDef.
