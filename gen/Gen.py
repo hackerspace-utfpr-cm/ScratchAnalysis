@@ -40,25 +40,22 @@ def gen(argv):
     walker.walk(listener, tree)
     # print(listener.score)
     return listener.score
-
-def run():
-    gen()
  
 if __name__ == '__main__':
-
-    result = {}
-    rootdir = '/home/wxl/hb/test/test_file'
-    list = os.listdir(rootdir)
-    for i in range(0, len(list)):
-        if(i>100):
-            break
-        path = os.path.join(rootdir, list[i])
-        if os.path.isfile(path):
-            try:
-                during = timeit(stmt="gen(path)", setup="from Gen import gen;from __main__ import path", number=1)
-                result[path] = during
-            except Exception as e:
-                print(Exception)
-    r = json.dumps(result)
-    with open("cost_time_antlr.json", 'w') as f:
-        f.write(r)
+    gen(sys.argv[1])
+    # result = {}
+    # rootdir = '/home/wxl/hb/test/test_file'
+    # list = os.listdir(rootdir)
+    # for i in range(0, len(list)):
+    #     if(i>100):
+    #         break
+    #     path = os.path.join(rootdir, list[i])
+    #     if os.path.isfile(path):
+    #         try:
+    #             during = timeit(stmt="gen(path)", setup="from Gen import gen;from __main__ import path", number=1)
+    #             result[path] = during
+    #         except Exception as e:
+    #             print(Exception)
+    # r = json.dumps(result)
+    # with open("cost_time_antlr.json", 'w') as f:
+    #     f.write(r)

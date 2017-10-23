@@ -226,11 +226,6 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#value.
     def enterValue(self, ctx):
         ctx_Text = ctx.getText()
-        # 评分标准1-2
-        if ctx_Text == '"procDef"':
-            self.proj_count += 1
-            if self.proj_count > 0 and self.ap_score < 2:
-                self.ap_score = 2
         # 评分标准1-3
         if ctx_Text == '"whenCloned"':
             self.clone_count += 1
@@ -244,6 +239,7 @@ class AntlrListener(ParseTreeListener):
                 self.Parallelism_score = 2
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
+
         if '"whenIReceive"' == ctx_Text:
             self.whrecive_count += 1
             # 评分标准2-3
@@ -449,6 +445,10 @@ class AntlrListener(ParseTreeListener):
 
     #判断是否含有递归存在
     def enterProcDef(self, ctx):
+        self.proj_count += 1
+        if self.proj_count > 0 and self.ap_score < 2:
+            self.ap_score = 2
+
         ctxText = ctx.getText()
         ctxValue = ctx.value()
         if ctxValue:
