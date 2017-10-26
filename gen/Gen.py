@@ -38,7 +38,7 @@ def gen(argv):
     walker = ParseTreeWalker()
     listener = AntlrListener()
     walker.walk(listener, tree)
-    # print(listener.score)
+    print(listener.score)
     return listener.score
  
 if __name__ == '__main__':

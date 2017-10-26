@@ -22,10 +22,10 @@ class AntlrListener(ParseTreeListener):
         self.repeat_depth = 0#repeat语句的深度
         self.proj_count = 0#自定义函数proj的数目
         self.sprits_count = 0#角色sprits的数目
-        self.wg_count = 0#小绿旗子的数目
+        self.wg_count = 0#小绿旗子下代码的数目
         self.clone_count = 0#clone语句的数目
         self.whenclick_count = 0#鼠标点击事件的数目
-        self.whenkey_count = 0#键盘输入事件的数目
+        self.whenkey_count = 0#键盘输入事件后的数目
         self.whdrop_count = 0#背景切换的数目
         self.whrecive_count = 0#接收信号模块的数目
         self.whsensor_count = 0#输入音频视频的数目
@@ -90,6 +90,8 @@ class AntlrListener(ParseTreeListener):
             # print("使用了" + str(self.Recursively) + "次递归")
             # self.hint.append("使用了" + str(self.Recursively) + "次递归")
         self.print_all()
+        print("ifdepth:")
+        print(self.max_if_depth)
 
     # Enter a parse tree produced by AntlrParser#obj.
     def enterObj(self, ctx):
@@ -233,29 +235,29 @@ class AntlrListener(ParseTreeListener):
                 self.ap_score = 3
 
         if '"whenKeyPressed"' == ctx_Text:
-            self.whenkey_count += 1
+            self.whenkey_count = (len(ctx.parentCtx.children)-1)/2-1
             # 评分标准2-2
-            if self.whenkey_count > 1 and self.whenclick_count > 1 and self.Parallelism_score < 2:
+            if self.whenkey_count > 2 and self.whenclick_count > 1 and self.Parallelism_score < 2:
                 self.Parallelism_score = 2
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
 
         if '"whenIReceive"' == ctx_Text:
-            self.whrecive_count += 1
+            self.whrecive_count = (len(ctx.parentCtx.children)-1)/2-1
             # 评分标准2-3
-            if self.whdrop_count > 1 or self.whrecive_count > 1 or self.whsensor_count > 1 and self.Parallelism_score < 3:
+            if self.whdrop_count > 2 or self.whrecive_count > 2 or self.whsensor_count > 2 and self.Parallelism_score < 3:
                 self.Parallelism_score = 3
 
         if '"whenSensorGreaterThan"' == ctx_Text:
-            self.whsensor_count += 1
+            self.whsensor_count += (len(ctx.parentCtx.children)-1)/2-1
             # 评分标准2-3
-            if self.whdrop_count > 1 or self.whrecive_count > 1 or self.whsensor_count > 1 and self.Parallelism_score < 3:
+            if self.whdrop_count > 2 or self.whrecive_count > 2 or self.whsensor_count > 2 and self.Parallelism_score < 3:
                 self.Parallelism_score = 3
 
         if '"whenClicked"' == ctx_Text:
-            self.whenclick_count += 1
+            self.whenclick_count = (len(ctx.parentCtx.children)-1)/2-1
             # 评分标准2-2
-            if self.whenkey_count > 1 and self.whenclick_count > 1 and self.Parallelism_score < 2:
+            if self.whenkey_count > 2 and self.whenclick_count > 1 and self.Parallelism_score < 2:
                 self.Parallelism_score = 2
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
@@ -279,6 +281,8 @@ class AntlrListener(ParseTreeListener):
         if '"wait:elapsed:from:"' == ctx_Text:
             if self.Synchronization < 1:
                 self.Synchronization = 1
+            if self.UserInteractivity < 2:
+                self.UserInteractivity = 2
 
         if ctx_Text in ('"stopScripts"', '"broadcast"',):
             if self.Synchronization < 2:
@@ -289,10 +293,12 @@ class AntlrListener(ParseTreeListener):
             if self.Synchronization < 3:
                 self.Synchronization = 3
         if ctx_Text == '"whenSceneStarts"':
-            self.whdrop_count += 1
+            self.whdrop_count += (len(ctx.parentCtx.children)-1)/2-1
             # 评分标准2-3
-            if self.whdrop_count > 1 or self.whrecive_count > 1 or self.whsensor_count > 1 and self.Parallelism_score < 3:
+            if self.whdrop_count > 2 or self.whrecive_count > 2 or self.whsensor_count > 2 and self.Parallelism_score < 3:
                 self.Parallelism_score = 3
+            if self.Synchronization < 3:
+                self.Synchronization = 3
 
         if ctx_Text == '"insert:at:ofList:"':
             self.have_insert = True
@@ -303,6 +309,11 @@ class AntlrListener(ParseTreeListener):
 
     # Exit a parse tree produced by AntlrParser#value.
     def exitValue(self, ctx):
+        self.whenkey_count=0;
+        self.whenclick_count=0;
+        self.whdrop_count =0;
+        self.whrecive_count =0;
+        self.whsensor_count = 0;
         pass
 
     # Enter a parse tree produced by AntlrParser#cblock_value.
@@ -311,13 +322,15 @@ class AntlrListener(ParseTreeListener):
             if self.UserInteractivity < 1:
                 self.UserInteractivity = 1
             # 评分标准2-1
-            self.wg_count += 1
-            if self.wg_count > 1 and self.Parallelism_score == 0:
+            self.wg_count = (len(ctx.parentCtx.children)-1)/2-1;
+            print(self.wg_count);
+            if self.wg_count > 2 and self.Parallelism_score == 0:
                 self.Parallelism_score = 1
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_value.
     def exitCblock_value(self, ctx):
+        self.wg_count=0;
         pass
 
     # Enter a parse tree produced by AntlrParser#cblock_doRepeat.
@@ -353,6 +366,11 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#cblock_doIF.
     # 将if中比较静态的两部分进行比较,得到某部分是不是死代码
     def enterCblock_doIF(self, ctx):
+        self.if_depth+=1
+
+        if self.if_depth>self.max_if_depth:
+            self.max_if_depth=self.if_depth
+        # print("nom")
         # ctx_Text = ctx.getText()
         # #去掉关于变量、列表和随机生成的内容
         # if ctx.getText().find('readVariable') > 0 or ctx.getText().find('lineCountOfList') > 0 or ctx.getText().find(
@@ -389,10 +407,13 @@ class AntlrListener(ParseTreeListener):
 
     # Exit a parse tree produced by AntlrParser#cblock_doIF.
     def exitCblock_doIF(self, ctx):
+        self.if_depth-=1
         pass
 
     # Enter a parse tree produced by AntlrParser#cblock_doWaitUntil.
     def enterCblock_doWaitUntil(self, ctx):
+        if self.Synchronization < 3:
+            self.Synchronization = 3
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doWaitUntil.
@@ -467,6 +488,7 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#comments_array.
     def enterComments_array(self, ctx):
+        self.comments_count+=1
         pass
 
     # Exit a parse tree produced by AntlrParser#comments_array.
