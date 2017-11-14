@@ -38,8 +38,8 @@ def gen(argv):
     walker = ParseTreeWalker()
     listener = AntlrListener()
     walker.walk(listener, tree)
-    print(listener.score)
-    return listener.score
+    # print(listener.score)
+    return listener.score,listener.hint,listener.profile
  
 if __name__ == '__main__':
     gen(sys.argv[1])
