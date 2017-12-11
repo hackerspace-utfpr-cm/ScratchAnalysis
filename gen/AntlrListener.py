@@ -91,7 +91,8 @@ class AntlrListener(ParseTreeListener):
         self.profile['more'] = self.more_count
         self.profile['data'] = self.data_count
         self.profile['backdrop'] = self.backgroud
-        self.profile['snduse'] = self.sound_use
+        self.profile['sprites'] = self.sprits_count
+        # self.profile['snduse'] = self.sound_use
 
     def print_all(self):
         # ---------------------------------------------------------------------
@@ -109,7 +110,8 @@ class AntlrListener(ParseTreeListener):
         # print("deadcode_count:", self.deadcode_count)
         # ---------------------------------------------------------------------
         self.create_score()
-        print(self.score)
+        self.create_profile()
+        print(self.score,self.profile)
 
     # Enter a parse tree produced by AntlrParser#json.
     def enterJson(self, ctx):
@@ -172,7 +174,7 @@ class AntlrListener(ParseTreeListener):
         if ctx_STRING:
             ctx_STRING_Text = ctx_STRING.getText()
             if ctx_STRING_Text == '"objName"':
-                if ctx.value().STRING().getText() != '"Stage"':
+                if ctx.value().STRING().getText() != '"Stage"'and ctx.value().STRING().getText() != '"舞台"':
                     self.sprits_count += 1
                     # 评分标准1-1
                     if self.sprits_count > 1 and self.scripts_count > 1 and self.ap_score == 0:
@@ -417,6 +419,7 @@ class AntlrListener(ParseTreeListener):
         motions={'"forward:"','"turnRight:"','"turnLeft:"','"heading:"','"pointTowards:"','"gotoX:y:"','"gotoSpriteOrMouse:"','"glideSecs:toX:y:elapsed:from:"','"changeXposBy:"','"xpos:"','"changeYposBy:"','"ypos:"','"bounceOffEdge"','"setRotationStyle"'}
         if ctx_Text in motions:
             self.motionnum+=1;
+            print(ctx_Text)
 
         lookikes = {'"say:duration:elapsed:from:"', '"say:"', '"think:duration:elapsed:from:"', '"think:"', '"show"', '"hide"',
                    '"lookLike:"', '"nextCostume"', '"startScene"', '"changeGraphicEffect:by:"',
@@ -438,7 +441,7 @@ class AntlrListener(ParseTreeListener):
         if ctx_Text in drawlist:
             self.drawnum += 1;
 
-        whenlist = {'"whenGreenFlag"', '"whenKeyPressed"', '"whenClicked"', '"whenSceneStarts"'}
+        whenlist = { '"whenKeyPressed"', '"whenClicked"', '"whenSceneStarts"'}
         if ctx_Text in whenlist:
             self.when_count += 1;
             # print(ctx_Text)
@@ -446,18 +449,13 @@ class AntlrListener(ParseTreeListener):
         controllist = {'"whenCloned"', '"wait:elapsed:from:"', '"stopScripts"','"createCloneOf"','"deleteClone"'}
         if ctx_Text in controllist:
             self.control_count += 1;
-            # print(ctx_Text)
+            print(ctx_Text)
 
         sensorlist = {'"keyPressed:"', '"mousePressed"', '"mouseX"', '"mouseY"', '"soundLevel"','"senseVideoMotion"','"setVideoState"','"distanceTo:"','"color:sees:"','"touchingColor:"','"touching:"','"timer"','"getAttribute:of:"','"timeAndDate"','"timestamp"','"getUserName"'}
         if ctx_Text in sensorlist:
             self.sensor_count += 1;
             # print(ctx_Text)
 
-        operatelist = {'"+"', '"-"', '"*"', '"\/"', '"randomFrom:to:"', '"<"',
-                      '"="', '">"', '"&"', '"|"', '"not"', '"concatenate:with:"',
-                      '"letter:of:"', '"stringLength:"', '"%"', '"rounded"','"computeFunction:of:"'}
-        if ctx_Text in operatelist:
-            self.operate_count+= 1;
             # print(ctx_Text)
 
         operatelist = {'"+"', '"-"', '"*"', '"\/"', '"randomFrom:to:"', '"<"',
@@ -512,7 +510,7 @@ class AntlrListener(ParseTreeListener):
         if self.FlowControl_score < 2:
             self.FlowControl_score = 2
         self.control_count += 1;
-        # print(ctx.getText())
+        print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doRepeat.
@@ -528,7 +526,7 @@ class AntlrListener(ParseTreeListener):
         if self.FlowControl_score < 3:
             self.FlowControl_score = 3
         self.control_count += 1;
-        # print(ctx.getText())
+        print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doUntil.
@@ -544,7 +542,7 @@ class AntlrListener(ParseTreeListener):
         if self.LogicalThinking < 2:
             self.UserInteractivity = 2
         self.control_count += 1;
-        # print(ctx.getText())
+        print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doIfElse.
@@ -593,7 +591,7 @@ class AntlrListener(ParseTreeListener):
         if self.LogicalThinking < 1:
             self.UserInteractivity = 1
         self.control_count += 1;
-        # print(ctx.getText())
+        print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doIF.
@@ -606,7 +604,7 @@ class AntlrListener(ParseTreeListener):
         if self.Synchronization < 3:
             self.Synchronization = 3
         self.control_count += 1;
-        # print(ctx.getText())
+        print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doWaitUntil.
@@ -618,7 +616,7 @@ class AntlrListener(ParseTreeListener):
         if self.FlowControl_score < 2:
             self.FlowControl_score = 2
         self.control_count += 1;
-        # print(ctx.getText())
+        print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doForever.
@@ -713,7 +711,7 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#costume_content.
     def enterCostume_content(self, ctx):
-        if ctx.parentCtx.parentCtx.parentCtx.getText().find('"Stage"')>0:
+        if ctx.parentCtx.parentCtx.parentCtx.getText().find('"Stage"')>0 or ctx.parentCtx.parentCtx.parentCtx.getText().find('"舞台"')>0:
             self.backgroud += 1
         pass
 
