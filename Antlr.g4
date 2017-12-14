@@ -23,8 +23,8 @@ scripts_array
 
 
 array
-   : '[' value (',' value)* ']'
-   | '[' cblock_value (',' cblock_value)* ']'
+   : '[' cblock_value (',' cblock_value)* ']'
+   | '[' value (',' value)* ']'
    | '[' ']'
    ;
 

@@ -55,10 +55,10 @@ def serializedATN():
         buf.write(u"\2PQ\7\7\2\2QR\5\16\b\2RS\7\4\2\2ST\5\16\b\2TU\7\4\2")
         buf.write(u"\2UV\5\f\7\2VW\7\b\2\2WY\3\2\2\2XO\3\2\2\2Y\\\3\2\2\2")
         buf.write(u"ZX\3\2\2\2Z[\3\2\2\2[]\3\2\2\2\\Z\3\2\2\2]^\7\b\2\2^")
-        buf.write(u"\t\3\2\2\2_`\7\7\2\2`e\5\16\b\2ab\7\4\2\2bd\5\16\b\2")
+        buf.write(u"\t\3\2\2\2_`\7\7\2\2`e\5\20\t\2ab\7\4\2\2bd\5\20\t\2")
         buf.write(u"ca\3\2\2\2dg\3\2\2\2ec\3\2\2\2ef\3\2\2\2fh\3\2\2\2ge")
-        buf.write(u"\3\2\2\2hi\7\b\2\2ix\3\2\2\2jk\7\7\2\2kp\5\20\t\2lm\7")
-        buf.write(u"\4\2\2mo\5\20\t\2nl\3\2\2\2or\3\2\2\2pn\3\2\2\2pq\3\2")
+        buf.write(u"\3\2\2\2hi\7\b\2\2ix\3\2\2\2jk\7\7\2\2kp\5\16\b\2lm\7")
+        buf.write(u"\4\2\2mo\5\16\b\2nl\3\2\2\2or\3\2\2\2pn\3\2\2\2pq\3\2")
         buf.write(u"\2\2qs\3\2\2\2rp\3\2\2\2st\7\b\2\2tx\3\2\2\2uv\7\7\2")
         buf.write(u"\2vx\7\b\2\2w_\3\2\2\2wj\3\2\2\2wu\3\2\2\2x\13\3\2\2")
         buf.write(u"\2yz\7\7\2\2z\177\5\20\t\2{|\7\4\2\2|~\5\20\t\2}{\3\2")
@@ -552,18 +552,18 @@ class AntlrParser ( Parser ):
             super(AntlrParser.ArrayContext, self).__init__(parent, invokingState)
             self.parser = parser
 
-        def value(self, i=None):
-            if i is None:
-                return self.getTypedRuleContexts(AntlrParser.ValueContext)
-            else:
-                return self.getTypedRuleContext(AntlrParser.ValueContext,i)
-
-
         def cblock_value(self, i=None):
             if i is None:
                 return self.getTypedRuleContexts(AntlrParser.Cblock_valueContext)
             else:
                 return self.getTypedRuleContext(AntlrParser.Cblock_valueContext,i)
+
+
+        def value(self, i=None):
+            if i is None:
+                return self.getTypedRuleContexts(AntlrParser.ValueContext)
+            else:
+                return self.getTypedRuleContext(AntlrParser.ValueContext,i)
 
 
         def getRuleIndex(self):
@@ -594,7 +594,7 @@ class AntlrParser ( Parser ):
                 self.state = 93
                 self.match(AntlrParser.T__4)
                 self.state = 94
-                self.value()
+                self.cblock_value()
                 self.state = 99
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
@@ -602,7 +602,7 @@ class AntlrParser ( Parser ):
                     self.state = 95
                     self.match(AntlrParser.T__1)
                     self.state = 96
-                    self.value()
+                    self.cblock_value()
                     self.state = 101
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
@@ -616,7 +616,7 @@ class AntlrParser ( Parser ):
                 self.state = 104
                 self.match(AntlrParser.T__4)
                 self.state = 105
-                self.cblock_value()
+                self.value()
                 self.state = 110
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
@@ -624,7 +624,7 @@ class AntlrParser ( Parser ):
                     self.state = 106
                     self.match(AntlrParser.T__1)
                     self.state = 107
-                    self.cblock_value()
+                    self.value()
                     self.state = 112
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)

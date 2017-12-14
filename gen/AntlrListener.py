@@ -7,6 +7,7 @@ from antlr4 import *
 # This class defines a complete listener for a parse tree produced by AntlrParser.
 class AntlrListener(ParseTreeListener):
     def __init__(self):
+        self.deadcode_flag = False
         self.max_depth = 0   #语法树的最大深度
         self.max_if_depth = 0#最大if语句的深度
         self.max_until_depth = 0#最大until语句的深度
@@ -107,7 +108,7 @@ class AntlrListener(ParseTreeListener):
         # print("comments_count:", self.comments_count)
         # print("proj_count:", self.proj_count)
         # print("sprits_count:", self.sprits_count)
-        # print("deadcode_count:", self.deadcode_count)
+        print("deadcode_count:", self.deadcode_count)
         # ---------------------------------------------------------------------
         self.create_score()
         self.create_profile()
@@ -120,6 +121,8 @@ class AntlrListener(ParseTreeListener):
     # Exit a parse tree produced by AntlrParser#json.
     def exitJson(self, ctx):
         # 是否有不匹配的广播
+        if (self.whdrop_count >= 2 or self.whrecive_count >= 2 or self.whsensor_count >= 2) and self.Parallelism_score < 3:
+            self.Parallelism_score = 3
         if len(self.receivelist) != len(self.broadcastlist):
             self.hint.append("广播不匹配")
             # print("广播不匹配")
@@ -183,14 +186,6 @@ class AntlrListener(ParseTreeListener):
                 if ctx.value().STRING().getText().find('Sprite') > 0 or ctx.value().STRING().getText().find('角色') > 0:
                     self.Meaningless_count += 1
                     self.Meaningless_list.append(ctx.value().STRING().getText().strip('"'))
-
-            if ctx_STRING_Text == '"variables"':
-                if self.DataRepresentation < 2:
-                    self.DataRepresentation = 2
-
-            if ctx_STRING_Text == '"lists"':
-                if self.DataRepresentation < 3:
-                    self.DataRepresentation = 3
 
     # Exit a parse tree produced by AntlrParser#pair.
     def exitPair(self, ctx):
@@ -267,12 +262,11 @@ class AntlrListener(ParseTreeListener):
             if flag1 == 0:
                 str3 = ctx.getText()
         # 评分标准1-1
-        self.scripts_count += 1
-        if self.sprits_count > 1 and self.scripts_count > 1 and self.ap_score < 1:
-            self.ap_score = 1
+
         # 有scripts就给1分
-        if self.FlowControl_score < 1:
-            self.FlowControl_score = 1
+        # if self.deadcode_flag == False:
+        #     if self.FlowControl_score < 1:
+        #         self.FlowControl_score = 1
 
     # Exit a parse tree produced by AntlrParser#scripts_array.
     def exitScripts_array(self, ctx):
@@ -291,10 +285,16 @@ class AntlrListener(ParseTreeListener):
         #检测没有控制模块开始的代码块，认定为死代码
         if ctx.getText().find("when") == -1:
             self.deadcode_count += 1
+            self.deadcode_flag = True
+
+        if (ctx.getChildCount()-1)/2-1 > 1 and self.deadcode_flag == False:
+            if self.FlowControl_score < 1:
+                self.FlowControl_score = 1
         pass
 
     # Exit a parse tree produced by AntlrParser#blocks_array.
     def exitBlocks_array(self, ctx):
+        self.deadcode_flag = False
         pass
 
     # Enter a parse tree produced by AntlrParser#value.
@@ -306,26 +306,30 @@ class AntlrListener(ParseTreeListener):
             if self.proj_count > 0 and self.ap_score < 2:
                 self.ap_score = 2
         # 评分标准1-3
-        if ctx_Text == '"whenCloned"' or ctx_Text =='"createCloneOf"' or ctx_Text =='"deleteClone"':
+        if (ctx_Text == '"whenCloned"' or ctx_Text =='"createCloneOf"' or ctx_Text =='"deleteClone"') and self.deadcode_flag == False:
             self.clone_count += 1
             if self.clone_count > 0 and self.ap_score < 3:
                 self.ap_score = 3
 
-        if '"whenKeyPressed"' == ctx_Text:
+        if '"whenKeyPressed"' == ctx_Text and self.deadcode_flag == False:
             # self.whenkey_count = len(ctx.parentCtx.children)
-            whenkey_count1 = ctx.parentCtx.children[3].getText()
-            if self.whenkey_countlist.count(whenkey_count1)>0:
-                self.whenkey_count+=2
-            else:
-                self.whenkey_countlist.append(whenkey_count1)
+            meaning = (ctx.parentCtx.parentCtx.parentCtx.getChildCount()-1)/2-1
+            if meaning >= 1:
+                whenkey_count1 = ctx.parentCtx.children[3].getText()
+                if self.whenkey_countlist.count(whenkey_count1)>0:
+                    self.whenkey_count+=2
+
+                else:
+                    self.whenkey_countlist.append(whenkey_count1)
+
+                if self.UserInteractivity < 2:
+                    self.UserInteractivity = 2
                 # self.whenkey_count += 1
             # print(whenkey_count1)
             # 评分标准2-2
-
             if (self.whenkey_count >= 2 or self.whenclick_count >= 2) and self.Parallelism_score < 2:
                 self.Parallelism_score = 2
-            if self.UserInteractivity < 2:
-                self.UserInteractivity = 2
+
 
         # if '"whenIReceive"' == ctx_Text:
         #     self.whrecive_count = (len(ctx.parentCtx.children)-1)/2-1
@@ -334,70 +338,71 @@ class AntlrListener(ParseTreeListener):
         #     if self.whdrop_count >= 2 or self.whrecive_count >= 2 or self.whsensor_count >= 2 and self.Parallelism_score < 3:
         #         self.Parallelism_score = 3
 
-        if '"whenSensorGreaterThan"' == ctx_Text:
+        if '"whenSensorGreaterThan"' == ctx_Text and self.deadcode_flag == False:
             self.whsensor_count += 1
             # 评分标准2-3
-            if (self.whdrop_count >= 2 or self.whrecive_count >= 2 or self.whsensor_count >= 2) and self.Parallelism_score < 3:
-                self.Parallelism_score = 3
+            # if (self.whdrop_count >= 2 or self.whrecive_count >= 2 or self.whsensor_count >= 2) and self.Parallelism_score < 3:
+            #     self.Parallelism_score = 3
 
-        if '"whenClicked"' == ctx_Text:
-            whenclick_name = ctx.parentCtx.parentCtx.parentCtx.parentCtx.parentCtx.parentCtx.children[1].children[2].getText()
-            if self.whenclick_countlist.count(whenclick_name) > 0:
-                self.whenclick_count +=2
-            else:
-                self.whenclick_countlist.append(whenclick_name)
+        if '"whenClicked"' == ctx_Text and self.deadcode_flag == False:
+            whcl_meaning = (ctx.parentCtx.parentCtx.parentCtx.getChildCount() - 1)/2 - 1
+            print (ctx.parentCtx.parentCtx.getChildCount())
+            if whcl_meaning >=1:
+                whenclick_name = ctx.parentCtx.parentCtx.parentCtx.parentCtx.parentCtx.parentCtx.children[1].children[2].getText()
+                if self.whenclick_countlist.count(whenclick_name) > 0:
+                    self.whenclick_count +=2
+                else:
+                    self.whenclick_countlist.append(whenclick_name)
+
+                if self.UserInteractivity < 2:
+                    self.UserInteractivity = 2
             # 评分标准2-2
             if (self.whenkey_count >= 2 or self.whenclick_count >=2) and self.Parallelism_score < 2:
                 self.Parallelism_score = 2
-            if self.UserInteractivity < 2:
-                self.UserInteractivity = 2
 
-        if '"doAsk"' == ctx_Text:
+
+        if '"doAsk"' == ctx_Text and self.deadcode_flag == False:
             self.sensor_count+=1
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
 
-        if '"setVideoState"' == ctx_Text:
+        if '"setVideoState"' == ctx_Text and self.deadcode_flag == False:
             if self.UserInteractivity < 3:
                 self.UserInteractivity = 3
 
-        if '"soundLevel"' == ctx_Text:
+        if '"soundLevel"' == ctx_Text and self.deadcode_flag == False:
             if self.UserInteractivity < 3:
                 self.UserInteractivity = 3
 
         logic_operator = ('"&"', '"|"', '"not"', '"<"', '">"', '"="')
-        if (ctx_Text in logic_operator) and (self.LogicalThinking < 3):
+        if (ctx_Text in logic_operator) and (self.LogicalThinking < 3) and self.deadcode_flag == False:
             self.LogicalThinking = 3
 
-        if '"wait:elapsed:from:"' == ctx_Text:
+        if '"wait:elapsed:from:"' == ctx_Text and self.deadcode_flag == False:
             if self.Synchronization < 1:
                 self.Synchronization = 1
             if self.UserInteractivity < 2:
                 self.UserInteractivity = 2
 
-        if ctx_Text in ('"stopScripts"', '"broadcast"',):
-            if self.Synchronization < 2:
+        if ctx_Text in ('"stopScripts"', '"broadcast"') and self.deadcode_flag == False:
+            if self.Synchronization < 2 :
                 self.Synchronization = 2
 
-        sync_3p = ('"whenSceneStarts"', '"doBroadcastAndWait"', '"doWaitUntil"')
-        if ctx_Text in sync_3p:
+        sync_3p = ( '"doBroadcastAndWait"', '"doWaitUntil"')
+        if ctx_Text in sync_3p and self.deadcode_flag == False:
             if self.Synchronization < 3:
                 self.Synchronization = 3
-        if ctx_Text == '"whenSceneStarts"':
-            whenscense_count = ctx.parentCtx.children[3].getText()
+        if ctx_Text == '"whenSceneStarts"' and self.deadcode_flag == False:
+            whSS = (ctx.parentCtx.parentCtx.parentCtx.getChildCount() - 1) / 2 - 1
+            if whSS >= 1:
+                if self.Synchronization < 3:
+                    self.Synchronization = 3
+                whenscense_count = ctx.parentCtx.children[3].getText()
 
-            if self.whenscense_countlist.count(whenscense_count) > 0:
-                self.whdrop_count += 2
-            else:
-                self.whenscense_countlist.append(whenscense_count)
-                # print(whenscense_count)
-            # self.whdrop_count += (len(ctx.parentCtx.children)-1)/2-1
-            # 评分标准2-3
-            # print(self.whdrop_count)
-            if (self.whdrop_count >= 2 or self.whrecive_count >= 2 or self.whsensor_count >= 2) and self.Parallelism_score < 3:
-                self.Parallelism_score = 3
-            if self.Synchronization < 3:
-                self.Synchronization = 3
+                if self.whenscense_countlist.count(whenscense_count) > 0:
+                    self.whdrop_count += 2
+                else:
+                    self.whenscense_countlist.append(whenscense_count)
 
         if ctx_Text == '"insert:at:ofList:"':
             self.have_insert = True
@@ -406,53 +411,53 @@ class AntlrListener(ParseTreeListener):
             if self.ap_score < 3:
                 self.ap_score = 3
         sounds = {'"playSound:"', '"doPlaySoundAndWait"', '"playDrum"', '"noteOn:duration:elapsed:from:"'}
-        if ctx_Text in sounds:
+        if ctx_Text in sounds and self.deadcode_flag == False:
             self.sound_use += 1
 
         sprit_cos = {'"lookLike:"', '"nextCostume"'}
-        if ctx_Text in sprit_cos:
+        if ctx_Text in sprit_cos and self.deadcode_flag == False:
             self.sprit_costume += 1
 
-        if ctx_Text == '"instrument:"':
+        if ctx_Text == '"instrument:"' and self.deadcode_flag == False:
             self.instrument_use += 1
 
         motions={'"forward:"','"turnRight:"','"turnLeft:"','"heading:"','"pointTowards:"','"gotoX:y:"','"gotoSpriteOrMouse:"','"glideSecs:toX:y:elapsed:from:"','"changeXposBy:"','"xpos:"','"changeYposBy:"','"ypos:"','"bounceOffEdge"','"setRotationStyle"'}
-        if ctx_Text in motions:
+        if ctx_Text in motions and self.deadcode_flag == False:
             self.motionnum+=1;
-            print(ctx_Text)
+            # print(ctx_Text)
 
         lookikes = {'"say:duration:elapsed:from:"', '"say:"', '"think:duration:elapsed:from:"', '"think:"', '"show"', '"hide"',
                    '"lookLike:"', '"nextCostume"', '"startScene"', '"changeGraphicEffect:by:"',
                    '"setGraphicEffect:to:"', '"filterReset"', '"changeSizeBy:"', '"setSizeTo:"','"comeToFront"','"goBackByLayers:"'}
-        if ctx_Text in lookikes:
+        if ctx_Text in lookikes and self.deadcode_flag == False:
             self.looklikenum += 1;
 
         soundss = {'"playSound:"', '"doPlaySoundAndWait"', '"stopAllSounds"', '"playDrum"', '"rest:elapsed:from:"',
                     '"noteOn:duration:elapsed:from:"',
                     '"instrument:"', '"changeVolumeBy:"', '"setVolumeTo:"', '"changeTempoBy:"',
                     '"setTempoTo:"'}
-        if ctx_Text in soundss:
+        if ctx_Text in soundss and self.deadcode_flag == False:
             self.soundsnum += 1;
 
         drawlist = {'"clearPenTrails"', '"stampCostume"', '"putPenDown"', '"putPenUp"', '"penColor:"',
                    '"changePenHueBy:"',
                    '"setPenHueTo:"', '"changePenShadeBy:"', '"setPenShadeTo:"', '"changePenSizeBy:"',
                    '"penSize:"'}
-        if ctx_Text in drawlist:
+        if ctx_Text in drawlist and self.deadcode_flag == False:
             self.drawnum += 1;
 
         whenlist = { '"whenKeyPressed"', '"whenClicked"', '"whenSceneStarts"'}
-        if ctx_Text in whenlist:
+        if ctx_Text in whenlist and self.deadcode_flag == False:
             self.when_count += 1;
             # print(ctx_Text)
 
         controllist = {'"whenCloned"', '"wait:elapsed:from:"', '"stopScripts"','"createCloneOf"','"deleteClone"'}
-        if ctx_Text in controllist:
+        if ctx_Text in controllist and self.deadcode_flag == False:
             self.control_count += 1;
-            print(ctx_Text)
+            # print(ctx_Text)
 
         sensorlist = {'"keyPressed:"', '"mousePressed"', '"mouseX"', '"mouseY"', '"soundLevel"','"senseVideoMotion"','"setVideoState"','"distanceTo:"','"color:sees:"','"touchingColor:"','"touching:"','"timer"','"getAttribute:of:"','"timeAndDate"','"timestamp"','"getUserName"'}
-        if ctx_Text in sensorlist:
+        if ctx_Text in sensorlist and self.deadcode_flag == False:
             self.sensor_count += 1;
             # print(ctx_Text)
 
@@ -461,56 +466,67 @@ class AntlrListener(ParseTreeListener):
         operatelist = {'"+"', '"-"', '"*"', '"\/"', '"randomFrom:to:"', '"<"',
                        '"="', '">"', '"&"', '"|"', '"not"', '"concatenate:with:"',
                        '"letter:of:"', '"stringLength:"', '"%"', '"rounded"', '"computeFunction:of:"'}
-        if ctx_Text in operatelist:
+        if ctx_Text in operatelist and self.deadcode_flag == False:
             self.operate_count += 1;
             # print(ctx_Text)
 
-        datalist = {'"readVariable"', '"setVar:to:"', '"changeVar:by:"', '"showVariable:"', '"hideVariable:"', '"contentsOfList:"',
+        datalist = {'"readVariable"', '"setVar:to:"', '"changeVar:by:"', '"showVariable:"', '"hideVariable:"'}
+        arraylist = {'"contentsOfList:"',
                        '"getLine:ofList:"', '"lineCountOfList:"', '"list:contains:"', '"showList:"', '"append:toList:"', '"append:toList:"',
                        '"deleteLine:ofList:"', '"insert:at:ofList:"', '"setLine:ofList:to:"', '"hideList:"'}
-        if ctx_Text in datalist:
+        if (ctx_Text in datalist or ctx_Text in arraylist) and self.deadcode_flag == False :
             self.data_count += 1;
+
+        if ctx_Text in datalist and self.deadcode_flag == False:
+            if self.DataRepresentation < 2:
+                self.DataRepresentation = 2
+
+        if ctx_Text in arraylist and self.deadcode_flag == False:
+            if self.DataRepresentation < 3:
+                self.DataRepresentation = 3
 
     # Exit a parse tree produced by AntlrParser#value.
     def exitValue(self, ctx):
-        self.whenkey_count=0;
-        self.whenclick_count=0;
-        self.whdrop_count =0;
-        self.whrecive_count =0;
-        self.whsensor_count = 0;
         pass
 
     # Enter a parse tree produced by AntlrParser#cblock_value.
     def enterCblock_value(self, ctx):
         if ctx.WHENGREENFLAG():
-            self.when_count += 1;
-            self.wg_count += 1;
-            # print(ctx.getText())
-
-            if self.UserInteractivity < 1:
-                self.UserInteractivity = 1
+            wg_meaning = (ctx.parentCtx.getChildCount()-1)/2-1
+            if wg_meaning >= 1:
+                self.when_count += 1;
+                self.wg_count += 1;
+                if self.UserInteractivity < 1:
+                    self.UserInteractivity = 1
             # 评分标准2-1
             # self.wg_count = (len(ctx.parentCtx.children)-1)/2-1;
 
             # print(self.wg_count);
             if self.wg_count >=2 and self.Parallelism_score == 0:
                 self.Parallelism_score = 1
+
+        if self.deadcode_flag == False:
+            self.scripts_count += 1
+        # print(self.scripts_count)
+        if self.sprits_count > 1 and self.scripts_count > 1 and self.ap_score < 1:
+            self.ap_score = 1
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_value.
     def exitCblock_value(self, ctx):
-        self.wg_count=0;
+        # self.wg_count=0;
         pass
 
     # Enter a parse tree produced by AntlrParser#cblock_doRepeat.
     def enterCblock_doRepeat(self, ctx):
-        self.repeat_depth += 1
-        if self.repeat_depth > self.max_repeat_depth:
-            self.max_repeat_depth = self.repeat_depth
-        if self.FlowControl_score < 2:
-            self.FlowControl_score = 2
-        self.control_count += 1;
-        print(ctx.getText())
+        if self.deadcode_flag == False:
+            self.repeat_depth += 1
+            if self.repeat_depth > self.max_repeat_depth:
+                self.max_repeat_depth = self.repeat_depth
+            if self.FlowControl_score < 2:
+                self.FlowControl_score = 2
+            self.control_count += 1;
+        # print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doRepeat.
@@ -520,13 +536,14 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_doUntil.
     def enterCblock_doUntil(self, ctx):
-        self.until_depth += 1
-        if self.until_depth > self.max_until_depth:
-            self.max_until_depth = self.until_depth
-        if self.FlowControl_score < 3:
-            self.FlowControl_score = 3
-        self.control_count += 1;
-        print(ctx.getText())
+        if self.deadcode_flag == False:
+            self.until_depth += 1
+            if self.until_depth > self.max_until_depth:
+                self.max_until_depth = self.until_depth
+            if self.FlowControl_score < 3:
+                self.FlowControl_score = 3
+            self.control_count += 1;
+        # print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doUntil.
@@ -536,13 +553,14 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_doIfElse.
     def enterCblock_doIfElse(self, ctx):
-        self.if_depth += 1
-        if self.if_depth > self.max_if_depth:
-            self.max_if_depth = self.if_depth
-        if self.LogicalThinking < 2:
-            self.UserInteractivity = 2
-        self.control_count += 1;
-        print(ctx.getText())
+        if self.deadcode_flag == False:
+            self.if_depth += 1
+            if self.if_depth > self.max_if_depth:
+                self.max_if_depth = self.if_depth
+            if self.LogicalThinking < 2:
+                self.LogicalThinking = 2
+            self.control_count += 1;
+        # print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doIfElse.
@@ -553,45 +571,16 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#cblock_doIF.
     # 将if中比较静态的两部分进行比较,得到某部分是不是死代码
     def enterCblock_doIF(self, ctx):
-        self.if_depth+=1
+        if self.deadcode_flag == False:
+            self.if_depth+=1
 
-        if self.if_depth>self.max_if_depth:
-            self.max_if_depth=self.if_depth
-        # print("nom")
-        # ctx_Text = ctx.getText()
-        # #去掉关于变量、列表和随机生成的内容
-        # if ctx.getText().find('readVariable') > 0 or ctx.getText().find('lineCountOfList') > 0 or ctx.getText().find(
-        #         'randomFrom') > 0:
-        #     return
-        # #判断“<”号左右两边是否能匹配
-        # elif ctx.getText().find('<') > 0:
-        #     str1 = ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
-        #     str2 = str1.split(',')
-        #     v1 = str2[1].strip('"')
-        #     v2 = str2[2].strip('"')
-        #     if int(v1) > int(v2):
-        #         self.deadcode_count += 1
-        # # 判断“>”号左右两边是否能匹配
-        # elif ctx.getText().find('>') > 0:
-        #     str1 = ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
-        #     str2 = str1.split(',')
-        #     v1 = str2[1].strip('"')
-        #     v2 = str2[2].strip('"')
-        #     if int(v1) < int(v2):
-        #         self.deadcode_count += 1
-        # # 判断“=”号左右两边是否能匹配
-        # elif ctx.getText().find('=') > 0:
-        #     str1 = ctx_Text[ctx.getText().find('<'):ctx.getText().find(']')]
-        #     str2 = str1.split(',')
-        #     v1 = str2[1].strip('"')
-        #     v2 = str2[2].strip('"')
-        #     if int(v1) != int(v2):
-        #         self.deadcode_count += 1
+            if self.if_depth>self.max_if_depth:
+                self.max_if_depth=self.if_depth
         #评分标准6-1
-        if self.LogicalThinking < 1:
-            self.UserInteractivity = 1
-        self.control_count += 1;
-        print(ctx.getText())
+            if self.LogicalThinking < 1:
+                self.LogicalThinking = 1
+            self.control_count += 1;
+        # print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doIF.
@@ -601,10 +590,11 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_doWaitUntil.
     def enterCblock_doWaitUntil(self, ctx):
-        if self.Synchronization < 3:
-            self.Synchronization = 3
-        self.control_count += 1;
-        print(ctx.getText())
+        if self.deadcode_flag == False:
+            if self.Synchronization < 3:
+                self.Synchronization = 3
+            self.control_count += 1;
+        # print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doWaitUntil.
@@ -613,10 +603,11 @@ class AntlrListener(ParseTreeListener):
 
     # Enter a parse tree produced by AntlrParser#cblock_doForever.
     def enterCblock_doForever(self, ctx):
-        if self.FlowControl_score < 2:
-            self.FlowControl_score = 2
-        self.control_count += 1;
-        print(ctx.getText())
+        if self.deadcode_flag == False:
+            if self.FlowControl_score < 2 :
+                self.FlowControl_score = 2
+            self.control_count += 1;
+        # print(ctx.getText())
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doForever.
@@ -626,16 +617,17 @@ class AntlrListener(ParseTreeListener):
     # Enter a parse tree produced by AntlrParser#cblock_doBroadcast.
     # 发送广播模块发送的内容
     def enterCblock_doBroadcast(self, ctx):
-        self.when_count += 1;
+        if self.deadcode_flag == False:
+            self.when_count += 1;
 
-        ctxText = ctx.getText()
-        str1 = ctxText.split(",")
-        str1 = str1[1][:-2]
-        broadcastcontent = str1.strip('"')
-        print(broadcastcontent)
+            ctxText = ctx.getText()
+            str1 = ctxText.split(",")
+            str1 = str1[1][:-2]
+            broadcastcontent = str1.strip('"')
+        # print(broadcastcontent)
         # # 判断是否发送过该该内容
-        if broadcastcontent.find("readVariable")<0 and  self.broadcastlist.count(broadcastcontent) == 0:
-            self.broadcastlist.append(broadcastcontent)
+            if broadcastcontent.find("readVariable")<0 and  self.broadcastlist.count(broadcastcontent) == 0:
+                self.broadcastlist.append(broadcastcontent)
         pass
 
     # Exit a parse tree produced by AntlrParser#cblock_doBroadcast.
@@ -652,6 +644,7 @@ class AntlrListener(ParseTreeListener):
         str1 = str1[1][:-2]
         receivecontent = str1.strip('"')
         print(receivecontent)
+        print(self.receivelist.count(receivecontent))
         # 判断是是否已经收到过该内容
         if self.receivelist.count(receivecontent) == 0:
             self.receivelist.append(receivecontent)
