@@ -14,6 +14,7 @@ pair
    : SCRIPTS ':' scripts_array
    | SCRIPTCOMMENTS ':' comments_array
    | STRING ':' value
+   | costumes
    ;
 
 scripts_array
@@ -22,8 +23,8 @@ scripts_array
 
 
 array
-   : '[' value (',' value)* ']'
-   | '[' cblock_value (',' cblock_value)* ']'
+   : '[' cblock_value (',' cblock_value)* ']'
+   | '[' value (',' value)* ']'
    | '[' ']'
    ;
 
@@ -101,6 +102,14 @@ comments_array
    : '[' value (',' value)* ']'
    ;
 
+costumes
+   :'"costumes"' ':' '[' costume_content(',' costume_content)*']'
+   ;
+costume_content
+   :'{' '"costumeName"' ':' value ',' '"baseLayerID": 'value',''"baseLayerMD5": 'value',''"bitmapResolution": 'value',''"rotationCenterX": 'value',''"rotationCenterY": 'value'}'
+   ;
+
+
 SCRIPTCOMMENTS
    : '"scriptComments"'
    ;
@@ -116,6 +125,7 @@ WHENGREENFLAG
 STRING
    : '"' (ESC | ~ ["\\])* '"'
    ;
+
 
 fragment ESC
    : '\\' (["\\/bfnrt] | UNICODE)
