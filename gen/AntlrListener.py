@@ -48,6 +48,11 @@ class AntlrListener(ParseTreeListener):
         self.hint = []
         self.Meaningless_list = []
 
+        # created @ 2018-03-20 17:02:14
+        self.blockCount = {} # 统计项目中的总块数和总脚本数
+        self.scriptCount = 0 # 脚本（函数）总数
+        self.spriteCount = 0 #角色总数
+
     def create_score(self):
         self.score['Abstraction'] = self.ap_score
         self.score['Parallelism'] = self.Parallelism_score
@@ -56,6 +61,12 @@ class AntlrListener(ParseTreeListener):
         self.score['LogicalThinking'] = self.LogicalThinking
         self.score['DataRepresentation'] = self.DataRepresentation
         self.score['Synchronization'] = self.Synchronization
+
+    def create_blockCount(self):  #统计脚本总数和角色总数
+        self.blockCount['spriteCount'] = self.spriteCount  #角色sprits的数目
+        self.blockCount['scriptCount'] = self.scriptCount #脚本语句scripts的数量
+
+
 
     def print_all(self):
         # ---------------------------------------------------------------------
@@ -70,10 +81,13 @@ class AntlrListener(ParseTreeListener):
         # print("comments_count:", self.comments_count)
         # print("proj_count:", self.proj_count)
         # print("sprits_count:", self.sprits_count)
+        # print("scriptCount:", self.scriptCount)
         # print("deadcode_count:", self.deadcode_count)
         # ---------------------------------------------------------------------
         self.create_score()
+        self.create_blockCount()
         print(self.score)
+        print(self.blockCount)
 
     # Enter a parse tree produced by AntlrParser#json.
     def enterJson(self, ctx):
@@ -145,6 +159,12 @@ class AntlrListener(ParseTreeListener):
             if ctx_STRING_Text == '"lists"':
                 if self.DataRepresentation < 3:
                     self.DataRepresentation = 3
+            if ctx_STRING_Text == '"scriptCount"':   #这里更新了统计脚本总数的方法，直接从json字段里获得
+                self.scriptCount = ctx.value().getText()
+                # print("self.scriptCount = " + str(self.scriptCount))
+            if ctx_STRING_Text == '"spriteCount"':   #这里更新了统计角色总数的方法，直接从json字段里获得
+                self.spriteCount = ctx.value().getText()
+                # print("self.spriteCount = " + str(self.spriteCount))
 
     # Exit a parse tree produced by AntlrParser#pair.
     def exitPair(self, ctx):
@@ -221,7 +241,8 @@ class AntlrListener(ParseTreeListener):
             if flag1 == 0:
                 str3 = ctx.getText()
         # 评分标准1-1
-        self.scripts_count += 1
+        self.scripts_count += 1    #该脚本统计方法认为每个角色只有一个脚本，与实际不符，所以更新该方法
+        # print(self.scripts_count)
         if self.sprits_count > 1 and self.scripts_count > 1 and self.ap_score < 1:
             self.ap_score = 1
         # 有scripts就给1分
