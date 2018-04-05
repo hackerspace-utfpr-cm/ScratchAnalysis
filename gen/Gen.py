@@ -28,6 +28,7 @@ def unzip_scratch(filename):
 def gen(argv):
     raw_json = unzip_scratch(argv)
     encoded_json = codecs.decode(raw_json, 'utf-8', 'strict')
+
     input = InputStream(encoded_json)
     if not input:
         return
@@ -59,3 +60,5 @@ if __name__ == '__main__':
     # r = json.dumps(result)
     # with open("cost_time_antlr.json", 'w') as f:
     #     f.write(r)
+
+

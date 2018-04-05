@@ -15,6 +15,7 @@ pair
    | SCRIPTCOMMENTS ':' comments_array
    | STRING ':' value
    | costumes
+   | changename
    ;
 
 scripts_array
@@ -26,8 +27,8 @@ array
    : '[' cblock_value (',' cblock_value)* ']'
    | '[' value (',' value)* ']'
    | '[' ']'
-   ;
 
+   ;
 
 blocks_array
    : '[' cblock_value (',' cblock_value)* ']'
@@ -44,6 +45,11 @@ value
    | 'null'
    ;
 
+condition
+   : array
+   | 'false'
+   ;
+
 cblock_value
    :'[' WHENGREENFLAG ']'
    |cblock_doRepeat
@@ -56,6 +62,7 @@ cblock_value
    |cblock_whenIReceive
    |procDef
    |array
+   |
    ;
 
 cblock_doRepeat
@@ -64,19 +71,19 @@ cblock_doRepeat
    ;
 
 cblock_doUntil
-   : '[' '"doUntil"' ',' value ',' value ']'
+   : '[' '"doUntil"' ',' condition ','  content ']'
    ;
 
 cblock_doIfElse
-   : '[' '"doIfElse"' ',' value ',' value ',' value ']'
+   : '[' '"doIfElse"' ',' condition ',' value ',' value ']'
    ;
 
 cblock_doIF
-   : '[' '"doIf"' ',' value ',' value ']'
+   : '[' '"doIf"' ',' condition ',' value ']'
    ;
 
 cblock_doWaitUntil
-   : '[' '"doWaitUntil"' ',' value ']'
+   : '[' '"doWaitUntil"' ',' condition ']'
    ;
 
 cblock_doForever
@@ -87,7 +94,7 @@ cblock_doBroadcast
    : '[' '"broadcast:"' ',' array ']'
    |'[' '"broadcast:"' ',' STRING ']'
    |'[' '"doBroadcastAndWait"' ',' array ']'
-    |'[' '"doBroadcastAndWait"' ',' STRING ']'
+   |'[' '"doBroadcastAndWait"' ',' STRING ']'
    ;
 
 cblock_whenIReceive
@@ -110,6 +117,21 @@ costume_content
    ;
 
 
+changename
+   :'"changecos":' array
+   |'"changespr":' array
+   ;
+
+content
+   : STRING
+   | NUMBER
+   | obj
+   | array
+   | 'true'
+   | 'false'
+   | 'null'
+   ;
+
 SCRIPTCOMMENTS
    : '"scriptComments"'
    ;
@@ -126,7 +148,6 @@ STRING
    : '"' (ESC | ~ ["\\])* '"'
    ;
 
-
 fragment ESC
    : '\\' (["\\/bfnrt] | UNICODE)
    ;
@@ -137,14 +158,14 @@ fragment HEX
    : [0-9a-fA-F]
    ;
 NUMBER
-   : '-'? INT '.' [0-9] + EXP? | '-'? INT EXP | '-'? INT
+   : '-'? INT ('.' [0-9] +)? EXP ?
    ;
 fragment INT
    : '0' | [1-9] [0-9]*
    ;
 // no leading zeros
 fragment EXP
-   : [Ee] [+\-]? INT
+   : [Ee] [+\-]? INT+
    ;
 // \- since - means "range" inside [...]
 WS
